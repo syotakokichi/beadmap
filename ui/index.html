@@ -4,9 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>beadmap</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<p>beadmap UI は実装中です（画面レイアウトの赤ペン確認後に実装）。</p>
-<p>API: <a href="/api/snapshot">/api/snapshot</a> / <a href="/api/closed">/api/closed</a></p>
+
+<header>
+  <span class="brand">beadmap</span>
+  <span id="source" class="source" title="データソース"></span>
+  <span id="freshness" class="freshness"></span>
+</header>
+
+<div id="stale-banner" class="stale-banner hidden"></div>
+
+<main>
+  <section id="tiles" class="tiles" aria-label="サマリー"></section>
+
+  <section class="filters">
+    <select id="f-priority"><option value="">priority: 全て</option></select>
+    <select id="f-label"><option value="">ラベル: 全て</option></select>
+    <input id="f-search" type="search" placeholder="ID・タイトルを検索">
+    <button id="toggle-expand" class="chip" title="親子ツリーの展開切替">子を展開</button>
+  </section>
+
+  <section class="panes">
+    <div id="list" class="pane list-pane" aria-label="一覧"></div>
+    <div id="detail" class="pane detail-pane" aria-label="詳細"></div>
+  </section>
+</main>
+
+<script src="app.js"></script>
 </body>
 </html>
