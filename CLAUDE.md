@@ -1,6 +1,6 @@
 # CLAUDE.md - beadmap 開発ガイド
 
-beads（bd CLI）のタスクデータを **読むだけ** のローカル進捗ビューア。
+beads（bd CLI）のタスクを 1 画面で俯瞰する読み取り専用ビューア。
 beads が正本、beadmap はその「読み取り用の地図」。地図は現地を書き換えない
 （プロダクト概要は [README](README.md) を参照）。
 
