@@ -1,0 +1,10 @@
+# Go
+/beadmap
+*.test
+*.out
+
+# 開発中の一時物
+.tmp/
+.DS_Store
+
+# beads runtime（.beads/ 配下の追跡ルールは .beads/.gitignore が持つ）
