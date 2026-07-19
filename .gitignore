@@ -8,3 +8,9 @@
 .DS_Store
 
 # beads runtime（.beads/ 配下の追跡ルールは .beads/.gitignore が持つ）
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/proxieddb/
