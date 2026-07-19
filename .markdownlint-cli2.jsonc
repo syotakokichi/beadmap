@@ -1,0 +1,10 @@
+{
+  // ハーネス検証CIの markdownlint 設定（対象 glob は workflow 側で指定）
+  // AGENTS.md は bd (beads) が生成・管理するファイルのため lint 対象外
+  "ignores": ["AGENTS.md"],
+  "config": {
+    "default": true,
+    // 日本語の文は 80 文字を自然に超えるため行長は見ない
+    "MD013": false
+  }
+}
