@@ -182,6 +182,115 @@ function escapeHTML(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+/* ---------- Markdown レンダラー（自前・ゼロ依存）
+   bead の description / design / notes を読みやすく表示するための最小実装。
+   対応: 見出し・箇条書き/番号リスト（ネスト・チェックボックス）・表・
+   コードフェンス・引用・水平線・太字・インラインコード・リンク。
+   全テキストは先にエスケープしてから自前タグに変換する（XSS 防止）。 ---------- */
+
+function mdInline(s) {
+  return String(s).split("`").map((part, idx) => {
+    if (idx % 2 === 1) return `<code>${escapeHTML(part)}</code>`;
+    let t = escapeHTML(part);
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return t;
+  }).join("");
+}
+
+function mdTable(rows) {
+  const cells = (r) => r.replace(/^\s*\|/, "").replace(/\|\s*$/, "")
+    .split("|").map((c) => mdInline(c.trim()));
+  let header = null;
+  let body = rows;
+  if (rows.length >= 2 && /^[\s|:\-]+$/.test(rows[1])) {
+    header = cells(rows[0]);
+    body = rows.slice(2);
+  }
+  let out = "<table>";
+  if (header) out += "<thead><tr>" + header.map((c) => `<th>${c}</th>`).join("") + "</tr></thead>";
+  out += "<tbody>" + body.map((r) =>
+    "<tr>" + cells(r).map((c) => `<td>${c}</td>`).join("") + "</tr>").join("") + "</tbody>";
+  return out + "</table>";
+}
+
+function mdRender(src) {
+  const lines = String(src ?? "").replace(/\r\n/g, "\n").split("\n");
+  const html = [];
+  const stack = []; // 開いているリストの種別（ul / ol）
+  const closeTo = (depth) => { while (stack.length > depth) html.push(`</${stack.pop()}>`); };
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (/^```/.test(line)) { // コードフェンス
+      closeTo(0);
+      const buf = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i])) { buf.push(lines[i]); i++; }
+      i++;
+      html.push(`<pre class="code"><code>${escapeHTML(buf.join("\n"))}</code></pre>`);
+      continue;
+    }
+    if (/^\s*\|/.test(line)) { // 表
+      closeTo(0);
+      const buf = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) { buf.push(lines[i]); i++; }
+      html.push(mdTable(buf));
+      continue;
+    }
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { // 見出し（詳細ペイン内なので h3 以下に落とす）
+      closeTo(0);
+      const lv = Math.min(h[1].length + 2, 6);
+      html.push(`<h${lv}>${mdInline(h[2])}</h${lv}>`);
+      i++;
+      continue;
+    }
+    if (/^\s*(---+|\*\*\*+)\s*$/.test(line)) { closeTo(0); html.push("<hr>"); i++; continue; }
+    if (/^\s*>\s?/.test(line)) { // 引用
+      closeTo(0);
+      const buf = [];
+      while (i < lines.length && /^\s*>\s?/.test(lines[i])) {
+        buf.push(lines[i].replace(/^\s*>\s?/, ""));
+        i++;
+      }
+      html.push(`<blockquote>${buf.map(mdInline).join("<br>")}</blockquote>`);
+      continue;
+    }
+    const li = line.match(/^(\s*)([-*+]|\d+[.)])\s+(.*)$/);
+    if (li) { // リスト（インデント 2 スペース = 1 段）
+      const depth = Math.floor(li[1].replace(/\t/g, "  ").length / 2) + 1;
+      const type = /^[-*+]$/.test(li[2]) ? "ul" : "ol";
+      closeTo(depth);
+      if (stack.length === depth && stack[depth - 1] !== type) closeTo(depth - 1);
+      while (stack.length < depth) { html.push(`<${type}>`); stack.push(type); }
+      const cb = li[3].match(/^\[( |x|X)\]\s+(.*)$/);
+      html.push(cb
+        ? `<li><input type="checkbox" disabled${cb[1] === " " ? "" : " checked"}>${mdInline(cb[2])}</li>`
+        : `<li>${mdInline(li[3])}</li>`);
+      i++;
+      continue;
+    }
+    if (/^\s*$/.test(line)) { closeTo(0); i++; continue; }
+    // 段落（特別な行が来るまで連結）
+    closeTo(0);
+    const buf = [line];
+    i++;
+    while (i < lines.length &&
+      !/^\s*$/.test(lines[i]) &&
+      !/^(```|\s*\||\s*>|#{1,6}\s|\s*([-*+]|\d+[.)])\s+|\s*(---+|\*\*\*+)\s*$)/.test(lines[i])) {
+      buf.push(lines[i]);
+      i++;
+    }
+    html.push(`<p>${buf.map(mdInline).join("<br>")}</p>`);
+  }
+  closeTo(0);
+  return `<div class="md">${html.join("")}</div>`;
+}
+
 function addRow(parent, i, opts = {}) {
   const div = document.createElement("div");
   div.className = "row" + (opts.kid ? " kid" : "") + (state.selected === i.id ? " sel" : "") +
@@ -335,8 +444,8 @@ function renderDetail() {
     i.assignee ? `担当 ${escapeHTML(i.assignee)}` : "",
   ].filter(Boolean).join(" · ");
 
-  const fold = (label, text) => text
-    ? `<details><summary>${label}</summary><pre>${escapeHTML(text)}</pre></details>` : "";
+  const fold = (label, text, open) => text
+    ? `<details${open ? " open" : ""}><summary>${label}</summary>${mdRender(text)}</details>` : "";
 
   el.innerHTML = `
     <div class="pane-title">詳細（親・子・依存は一段先のみ）</div>
@@ -349,8 +458,8 @@ function renderDetail() {
       <dt>blocker（これが閉じるのを待っている）</dt><dd>${linkList(i.blocked_by)}</dd>
       <dt>依存元（この issue を待っている）</dt><dd>${linkList(i.dependents)}</dd>
     </dl>
-    ${i.status === "closed" && i.close_reason ? fold("close 理由", i.close_reason) : ""}
-    ${fold("description", i.description)}
+    ${i.status === "closed" && i.close_reason ? fold("close 理由", i.close_reason, true) : ""}
+    ${fold("description", i.description, true)}
     ${fold("design", i.design)}
     ${fold("acceptance", i.acceptance_criteria)}
     ${fold("notes", i.notes)}
@@ -396,6 +505,33 @@ async function refresh() {
   }
   render();
 }
+
+/* ---------- ペイン幅の調整（ドラッグ・localStorage 保存） ---------- */
+
+(function initSplitter() {
+  const panes = document.querySelector(".panes");
+  const splitter = $("#splitter");
+  const saved = Number(localStorage.getItem("beadmap-list-w"));
+  if (saved >= 20 && saved <= 70) panes.style.setProperty("--list-w", saved + "%");
+
+  splitter.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    splitter.classList.add("drag");
+    const move = (ev) => {
+      const rect = panes.getBoundingClientRect();
+      const pct = Math.max(20, Math.min(70, ((ev.clientX - rect.left) / rect.width) * 100));
+      panes.style.setProperty("--list-w", pct + "%");
+      localStorage.setItem("beadmap-list-w", String(Math.round(pct)));
+    };
+    const up = () => {
+      splitter.classList.remove("drag");
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  });
+})();
 
 $("#f-priority").addEventListener("change", (e) => { state.filters.priority = e.target.value; render(); });
 $("#f-label").addEventListener("change", (e) => { state.filters.label = e.target.value; render(); });
