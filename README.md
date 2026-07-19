@@ -4,7 +4,7 @@ beads（[bd CLI](https://github.com/gastownhall/beads)）のタスクを **1 画
 読み取り専用ビューア。サマリー・親子ツリー・依存関係・停滞が一目で見える。
 beads が正本、beadmap はその「読み取り用の地図」— 地図は現地を書き換えない。
 
-AI 開発ハーネス連載（Zenn）の一環として、開発過程（devlog / ADR / beads 履歴）ごと公開している。
+AI 開発ハーネス連載（Zenn）の一環として、開発過程（devlog / ADR / beads 履歴）ごと公開する。
 
 ## Problem
 
@@ -36,8 +36,8 @@ beadmap -port 8080   # 優先ポートの指定
 
 ## Status
 
-v1 実装中。collector（jsonl parser / bd ライブクエリ / fallback 計算）と
-server（read-only 配信）は実装・テスト済み。UI はレイアウトの赤入れ確認を経て実装中。
+v1 実装済み（collector / server / ui の 3 層 + read-only 契約テスト）。
+残作業は公開ゲート通過 → GitHub 公開 → 実運用一巡。
 install 不要で気軽に試せる **静的デモページ**（サンプルデータ同梱・ブラウザ内描画のみ）も
 v1 公開後に用意する予定。
 
@@ -51,10 +51,11 @@ beadmap が正本を壊さないことは、以下の 5 項目を **構造** で
 | 1 | `127.0.0.1` にのみバインドする（LAN・外部公開の手段を持たない） | `TestListenLocalBindsLoopbackOnly` |
 | 2 | GET 以外の HTTP メソッドはすべて 405 で拒否する | `TestWriteMethodsRejected` |
 | 3 | bd CLI の実行は読み取り専用の固定引数（`ready --json` / `blocked --json`）のみ。任意コマンドを組み立てない | `TestBDArgsAreFixed` |
-| 4 | 外部サービスへの自動アクセスをしない（依存ゼロ・テレメトリなし） | 構造で担保（go.mod に依存が無いこと） |
+| 4 | 外部サービスへの自動アクセスをしない（依存ゼロ・テレメトリなし） | `TestGoModHasNoDependencies` / `TestNoOutboundNetworkCalls` |
 | 5 | データ取得に失敗した時は、前回スナップショットを「古い」と明示して表示する | `TestStaleServesLastGoodSnapshot` |
 
 書き込み（起票・更新・close）は bd CLI の役割であり、beadmap には今後も追加しない。
+エージェント向けの実装規約は [.claude/rules/read-only-contract.md](.claude/rules/read-only-contract.md) を参照。
 
 ## データソースと鮮度
 
@@ -87,7 +88,8 @@ go test ./...
 BEADMAP_BD_TEST_DIR=<.beads を含む repo> go test ./internal/collector/ -run TestFallbackMatchesBD -v
 ```
 
-- アーキテクチャ: collector（収集）/ server（配信）/ ui（表示）の 3 層。各層に単体テスト
+- アーキテクチャ: collector（収集）/ server（配信）/ ui（表示）の 3 層。
+  collector / server に単体テスト・契約テスト（UI ロジックの単体テストは bm-rvv で追補予定）
 - 設計判断は [docs/adr/](docs/adr/)、開発記録は [docs/devlog/](docs/devlog/)
 - この repo 自身のタスクもこの repo の beads（prefix `bm`）で管理している
   （beadmap で beadmap の開発を映すドッグフーディング）

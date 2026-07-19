@@ -151,9 +151,9 @@ function renderFilterOptions() {
   const fl = $("#f-label");
   const keep = (sel, v) => { if ([...sel.options].some((o) => o.value === v)) sel.value = v; };
   fp.innerHTML = '<option value="">priority: 全て</option>' +
-    priorities.map((p) => `<option value="${p}">P${p}</option>`).join("");
+    priorities.map((p) => `<option value="${escapeHTML(p)}">P${escapeHTML(p)}</option>`).join("");
   fl.innerHTML = '<option value="">ラベル: 全て</option>' +
-    labels.map((l) => `<option>${l}</option>`).join("");
+    labels.map((l) => `<option>${escapeHTML(l)}</option>`).join("");
   keep(fp, state.filters.priority);
   keep(fl, state.filters.label);
 }
@@ -163,13 +163,13 @@ function renderFilterOptions() {
 function badge(text, cls) { return `<span class="b ${cls || ""}">${text}</span>`; }
 
 function priorityBadge(i) {
-  return badge(`P${i.priority}`, i.priority === 1 ? "p1" : i.priority === 2 ? "p2" : "");
+  return badge(`P${escapeHTML(i.priority)}`, i.priority === 1 ? "p1" : i.priority === 2 ? "p2" : "");
 }
 
 function rowHTML(i, opts = {}) {
   const parts = [];
   if (opts.twist !== undefined) parts.push(`<span class="twist">${opts.twist}</span>`);
-  parts.push(`<span class="id">${i.id}</span>`);
+  parts.push(`<span class="id">${escapeHTML(i.id)}</span>`);
   parts.push(`<span class="title">${escapeHTML(i.title)}</span>`);
   if (i.issue_type === "epic") parts.push(badge("epic", "epic"));
   parts.push(priorityBadge(i));
@@ -305,7 +305,7 @@ function addRow(parent, i, opts = {}) {
 
 function statusBadge(i) {
   if (i.status === "deferred") return badge("❄ deferred", "st-deferred");
-  return badge(i.status, `st-${i.status}`);
+  return badge(escapeHTML(i.status), `st-${escapeHTML(i.status)}`);
 }
 
 function stallBadge(i) {
@@ -349,7 +349,7 @@ function renderList() {
         .sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id));
       for (const i of rows) {
         const waiting = (i.blocked_by || []).join(", ");
-        addRow(el, i, { badges: badge(`待ち: ${waiting}`, "blocked") });
+        addRow(el, i, { badges: badge(`待ち: ${escapeHTML(waiting)}`, "blocked") });
       }
       break;
 
@@ -410,9 +410,9 @@ function toggleEpic(id) {
 
 function issueLink(id) {
   const i = byId(id);
-  const label = i ? `${id} ${escapeHTML(i.title)}` : id;
+  const label = i ? `${escapeHTML(id)} ${escapeHTML(i.title)}` : escapeHTML(id);
   const st = i ? ` ${statusBadge(i)}` : "";
-  return `<span class="link" data-id="${id}">${label}</span>${st}`;
+  return `<span class="link" data-id="${escapeHTML(id)}">${label}</span>${st}`;
 }
 
 function linkList(ids) {
@@ -450,7 +450,7 @@ function renderDetail() {
   el.innerHTML = `
     <div class="pane-title">詳細（親・子・依存は一段先のみ）</div>
     <h2>${escapeHTML(i.title)}</h2>
-    <div class="did">${i.id} · ${meta}</div>
+    <div class="did">${escapeHTML(i.id)} · ${meta}</div>
     <div class="badges">${stateBadges}</div>
     <dl>
       <dt>親</dt><dd>${i.parent_id ? issueLink(i.parent_id) : '<span class="none">（なし）</span>'}</dd>

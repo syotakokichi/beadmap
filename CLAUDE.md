@@ -6,7 +6,7 @@ beads が正本、beadmap はその「読み取り用の地図」。地図は現
 
 ## 公開境界（最重要）
 
-- この repo は **公開されている**。公開は不可逆なので、**全 push 前に `/boundary-check` を必ず実行する**
+- この repo は **公開を前提とする**（公開後の取り消しは不可逆）。**全 push 前に `/boundary-check` を必ず実行する**
 - 境界ゲートは fail-closed: 非公開の語リスト（`~/.config/beadmap/boundary-words.txt`）が
   読めなければ exit 1 で停止する
 - 境界チェックは CI に含めない（語リストが非公開のため）。ローカルの push 前ゲートとして運用する
@@ -22,6 +22,7 @@ beadmap は閲覧専用に徹する。以下はエージェントへの恒久制
 - `127.0.0.1` 以外にバインドする手段を **作らない**
 - bd の実行は読み取り専用の固定引数のみ。引数の動的組み立ては **しない**
 - 外部サービスへの自動アクセスを **追加しない**
+- 取得失敗時は前回スナップショットを「古い」と明示する（黙って新しく見せない）
 - 契約の各項目には対応するテストがある。テストを弱める変更は契約変更であり、
   README の契約表と同時に更新して人間の承認を得る
 - 詳細: [.claude/rules/read-only-contract.md](.claude/rules/read-only-contract.md)
@@ -37,7 +38,9 @@ beadmap は閲覧専用に徹する。以下はエージェントへの恒久制
 | `docs/devlog/` | 時系列の開発記録 |
 | `docs/adr/` | 設計判断の記録（MADR-lite） |
 | `scripts/` | 境界チェック等の運用スクリプト |
-| `.claude/` | エージェント向けルール・コマンド |
+| `.claude/` | エージェント向けルール・コマンド（Claude Code） |
+| `.codex/` | Codex CLI 向け設定 |
+| `.github/workflows/` | CI（go test + vet + build / markdownlint / lychee） |
 
 ## タスク運用（beads）
 

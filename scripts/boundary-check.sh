@@ -17,8 +17,12 @@ if [[ ! -r "$LIST" ]]; then
   exit 1
 fi
 
-# 検査対象: git 追跡ファイル + 未追跡ファイル（.gitignore 対象は除外）
+# 検査対象1: git 追跡ファイル + 未追跡ファイル（.gitignore 対象は除外）
 list_files() { git ls-files --cached --others --exclude-standard -z; }
+
+# 検査対象2: 全コミット履歴。公開時は過去コミットもすべて push されるため、
+# 現在のツリーから削除済みの内容も検査する（fail-closed の対象を履歴まで広げる）
+commits="$(git rev-list --all 2>/dev/null || true)"
 
 status=0
 words=0
@@ -31,6 +35,14 @@ while IFS= read -r word; do
     echo "NG: 禁止語ヒット:" >&2
     echo "$hits" >&2
     status=1
+  fi
+  if [[ -n "$commits" ]]; then
+    hist_hits="$(git grep -nIiF -- "$word" $commits 2>/dev/null || true)"
+    if [[ -n "$hist_hits" ]]; then
+      echo "NG: 禁止語ヒット（git 履歴内）:" >&2
+      echo "$hist_hits" | head -20 >&2
+      status=1
+    fi
   fi
 done < "$LIST"
 

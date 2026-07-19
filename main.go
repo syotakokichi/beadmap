@@ -1,5 +1,5 @@
 // beadmap は beads（bd CLI）のタスクデータを読むだけのローカル進捗ビューア。
-// 正本（beads の Dolt DB / .beads/issues.jsonl）には一切書き込まない。
+// 正本（beads の Dolt DB）にも viewer 向け export（.beads/issues.jsonl）にも一切書き込まない。
 // read-only 契約の全文は README を参照。
 package main
 
