@@ -15,14 +15,29 @@
 
 ## fail-closed
 
-`scripts/boundary-check.sh` は語リストが読めない場合に exit 1 で停止する。
-「リストが無い = 検査できない = 通さない」を既定とし、検査漏れのまま push できない構造にする。
+`scripts/boundary-check.sh` は「検査できない状態では通さない」を既定とする。
 
-## CI に含めない理由
+- 語リストが読めない → exit 1
+- 語リストに有効な語が 0 語（コメント・空行のみ）→ exit 1
+- grep / git の実行エラー（exit 2 以上）→ 「ヒットなし」と区別して exit 1
 
-語リストは非公開（repo 外・`~/.config/beadmap/`）で管理するため、CI からは参照できない。
-リストを CI に渡すとリスト自体が公開側に露出するため、境界チェックは
-**ローカルの push 前ゲート** として運用する。
+検査対象は 作業ツリー / 全コミット履歴の blob / コミットメタデータ
+（author・committer・メッセージ）。shallow clone では履歴全体を検査できないため、
+CI から呼ぶ場合は `fetch-depth: 0` を必須とする。
+
+## CI での扱い（原則ローカル・例外はデモデータ自動更新のみ）
+
+語リストは非公開（repo 外・`~/.config/beadmap/`）で管理するため、
+**通常の push 前ゲートはローカル実行を一次とする**（PR/push の CI には含めない）。
+
+例外として、デモデータ自動更新（`.github/workflows/update-demo-data.yml`）に限り、
+語リストを GitHub Actions の encrypted secret `BOUNDARY_WORDS` として渡し、
+`BOUNDARY_WORDS_FILE` 経由で同じスクリプトを CI 実行する。この例外の条件:
+
+- secret 未設定・空なら更新を中止する（fail-closed 維持）
+- ログには語の内容もヒット詳細も出さない（ヒット時は中止の事実のみ）
+- ローカルの語リストを更新したら secret も更新する
+  （`gh secret set BOUNDARY_WORDS -R syotakokichi/beadmap < ~/.config/beadmap/boundary-words.txt`）
 
 ## 運用
 

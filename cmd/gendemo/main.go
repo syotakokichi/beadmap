@@ -14,24 +14,43 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/syotakokichi/beadmap/internal/collector"
 )
 
 // envelope は internal/server の API 応答と同じ封筒。UI が読むフィールドを揃える。
+// SourceCommit は生成元リポジトリの HEAD（トレーサビリティ用。未コミット変更があれば
+// +dirty を付け、公開 HEAD と異なるデータを同梱してしまう事故を検知できるようにする）。
 type envelope struct {
-	Issues      []collector.Issue `json:"issues"`
-	Ready       []string          `json:"ready"`
-	Blocked     []string          `json:"blocked"`
-	ReadySource string            `json:"ready_source"`
-	GeneratedAt time.Time         `json:"generated_at"`
-	FileModTime time.Time         `json:"file_mod_time"`
-	SourcePath  string            `json:"source_path"`
-	Warnings    []string          `json:"warnings,omitempty"`
-	Stale       bool              `json:"stale"`
-	Counts      map[string]int    `json:"counts"`
+	Issues       []collector.Issue `json:"issues"`
+	Ready        []string          `json:"ready"`
+	Blocked      []string          `json:"blocked"`
+	ReadySource  string            `json:"ready_source"`
+	GeneratedAt  time.Time         `json:"generated_at"`
+	FileModTime  time.Time         `json:"file_mod_time"`
+	SourcePath   string            `json:"source_path"`
+	SourceCommit string            `json:"source_commit,omitempty"`
+	Warnings     []string          `json:"warnings,omitempty"`
+	Stale        bool              `json:"stale"`
+	Counts       map[string]int    `json:"counts"`
+}
+
+// sourceCommit は dir の git HEAD を返す（git が無い・repo でない場合は空）。
+func sourceCommit(dir string) string {
+	head, err := exec.Command("git", "-C", dir, "rev-parse", "--short", "HEAD").Output()
+	if err != nil {
+		return ""
+	}
+	sha := strings.TrimSpace(string(head))
+	dirty, err := exec.Command("git", "-C", dir, "status", "--porcelain", "--", ".beads/issues.jsonl").Output()
+	if err == nil && len(strings.TrimSpace(string(dirty))) > 0 {
+		sha += "+dirty"
+	}
+	return sha
 }
 
 func main() {
@@ -63,13 +82,16 @@ func main() {
 		}
 	}
 
+	commit := sourceCommit(*dir)
+
 	write := func(suffix string, issues []collector.Issue, full bool) {
 		env := envelope{
-			Issues:      issues,
-			GeneratedAt: snap.GeneratedAt,
-			FileModTime: snap.FileModTime,
-			SourcePath:  snap.SourcePath,
-			Counts:      counts,
+			Issues:       issues,
+			GeneratedAt:  snap.GeneratedAt,
+			FileModTime:  snap.FileModTime,
+			SourcePath:   snap.SourcePath,
+			SourceCommit: commit,
+			Counts:       counts,
 		}
 		if full {
 			env.Ready = snap.Ready

@@ -74,7 +74,10 @@ function hhmmss(iso) {
 }
 
 function dateYMD(iso) {
-  return iso && !Number.isNaN(new Date(iso).getTime()) ? String(iso).slice(0, 10) : "";
+  const d = new Date(iso);
+  if (!iso || Number.isNaN(d.getTime())) return "";
+  // 閲覧環境のタイムゾーンで YYYY-MM-DD（UTC の ISO 文字列を slice すると日付がずれる）
+  return d.toLocaleDateString("sv-SE");
 }
 
 /* ---------- ヘッダ（staleness 常時表示） ---------- */
@@ -83,11 +86,13 @@ function renderHeader() {
   const s = state.snap;
   if (DEMO) {
     $("#source").textContent = s.source_path || "";
-    $("#freshness").textContent =
-      `スナップショット取得 ${dateYMD(s.generated_at)}（${relTime(s.generated_at) || "不明"}）`;
+    $("#freshness").innerHTML =
+      `スナップショット取得 ${dateYMD(s.generated_at)}（${relTime(s.generated_at) || "不明"}） · ready算出: ` +
+      (s.ready_source === "bd" ? "bd" : '<span class="warn">fallback（近似）</span>');
     const db = $("#demo-banner");
     db.innerHTML =
-      `静的デモ — ${dateYMD(s.generated_at)} 時点のスナップショットを表示中（自動更新なし）。` +
+      `静的デモ — ${dateYMD(s.generated_at)} 時点のスナップショットを表示中` +
+      `（データは毎日自動更新・変化があった日のみ反映。ページ内の自動リロードなし）。` +
       `起票・更新は bd CLI の役割。手元の実データを見るにはローカルで beadmap を起動 ` +
       `（<a href="https://github.com/syotakokichi/beadmap">README</a>）`;
     db.classList.remove("hidden");
@@ -584,7 +589,7 @@ $("#toggle-expand").addEventListener("click", () => { state.expandAll = !state.e
     `<option value="${escapeHTML(d.id)}"${d.id === demoDataset.id ? " selected" : ""}>${escapeHTML(d.label)}</option>`
   ).join("");
   sel.classList.remove("hidden");
-  sel.onchange = () => {
+  sel.addEventListener("change", () => {
     demoDataset = DEMO.datasets.find((d) => d.id === sel.value) || DEMO.datasets[0];
     state.snap = null;
     state.closed = null;
@@ -595,7 +600,7 @@ $("#toggle-expand").addEventListener("click", () => { state.expandAll = !state.e
     state.filters = { priority: "", label: "", search: "" };
     demoNeedsViewPick = true;
     refresh();
-  };
+  });
 })();
 
 refresh();

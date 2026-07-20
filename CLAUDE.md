@@ -8,8 +8,10 @@ beads が正本、beadmap はその「読み取り用の地図」。地図は現
 
 - この repo は **公開を前提とする**（公開後の取り消しは不可逆）。**全 push 前に `/boundary-check` を必ず実行する**
 - 境界ゲートは fail-closed: 非公開の語リスト（`~/.config/beadmap/boundary-words.txt`）が
-  読めなければ exit 1 で停止する
-- 境界チェックは CI に含めない（語リストが非公開のため）。ローカルの push 前ゲートとして運用する
+  読めない・有効語 0 語・検査の実行エラー、のいずれでも停止する
+- 境界チェックは原則ローカルの push 前ゲート。例外はデモデータ自動更新
+  （update-demo-data.yml）のみで、語リストを Actions secret として渡し fail-closed の
+  まま CI 実行する（ログに語・ヒット詳細を出さない。詳細は boundary-check ルール）
 - スクリーンショットは画像内テキストを grep で検査できない。公開前に目視チェックの記録を
   devlog に残す
 - 詳細: [.claude/rules/boundary-check.md](.claude/rules/boundary-check.md)
@@ -35,12 +37,14 @@ beadmap は閲覧専用に徹する。以下はエージェントへの恒久制
 | `internal/collector/` | データ収集層（jsonl parser・bd ライブクエリ・fallback 計算） |
 | `internal/server/` | 配信層（127.0.0.1・GET のみ・JSON API・静的 UI 配信） |
 | `ui/` | 表示層（素の HTML/CSS/JS・ビルドなし・go:embed で同梱） |
+| `cmd/gendemo/` | 静的デモ用スナップショット JSON の生成ツール（正本には書き込まない） |
+| `demo/` | 静的デモの設定（demo-config.js）とスナップショットデータ（data/） |
 | `docs/devlog/` | 時系列の開発記録 |
 | `docs/adr/` | 設計判断の記録（MADR-lite） |
 | `scripts/` | 境界チェック等の運用スクリプト |
 | `.claude/` | エージェント向けルール・コマンド（Claude Code） |
 | `.codex/` | Codex CLI 向け設定 |
-| `.github/workflows/` | CI（go test + vet + build / markdownlint / lychee） |
+| `.github/workflows/` | CI（ci.yml）/ Pages 配信（pages.yml）/ デモデータ自動更新（update-demo-data.yml） |
 
 ## タスク運用（beads）
 

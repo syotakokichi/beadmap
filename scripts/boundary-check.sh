@@ -2,9 +2,13 @@
 # 境界チェックゲート（push 前に必ず実行する）
 #
 # 非公開の語リスト（repo 外）に載っている語が repo 内に 1 件でもあれば失敗する。
-# リストが読めない場合も失敗する（fail-closed: 検査できない状態では通さない）。
-# CI では実行しない: 語リストが非公開で CI から参照できないため、
-# ローカルの push 前ゲートとして運用する。運用ルール: .claude/rules/boundary-check.md
+# fail-closed: 検査できない状態では通さない。
+#   - リストが読めない / 有効語が 0 語 → 失敗
+#   - grep・git の実行エラー（exit 2 以上） → 「ヒットなし」と区別して失敗
+# 検査対象: 作業ツリー（追跡+未追跡）/ 全コミット履歴の blob / コミットメタデータ
+# （author・committer・メッセージ）。
+# 通常はローカルの push 前ゲート。デモデータ自動更新の CI では語リストを
+# Actions secret から BOUNDARY_WORDS_FILE 経由で渡す（運用: .claude/rules/boundary-check.md）
 set -euo pipefail
 
 LIST="${BOUNDARY_WORDS_FILE:-$HOME/.config/beadmap/boundary-words.txt}"
@@ -17,34 +21,53 @@ if [[ ! -r "$LIST" ]]; then
   exit 1
 fi
 
-# 検査対象1: git 追跡ファイル + 未追跡ファイル（.gitignore 対象は除外）
-list_files() { git ls-files --cached --others --exclude-standard -z; }
+# 全コミット履歴（取得失敗は fail-closed で即停止。shallow clone では履歴全体を
+# 検査できないため、CI 側は fetch-depth: 0 で呼ぶこと）
+commits="$(git rev-list --all)"
 
-# 検査対象2: 全コミット履歴。公開時は過去コミットもすべて push されるため、
-# 現在のツリーから削除済みの内容も検査する（fail-closed の対象を履歴まで広げる）
-commits="$(git rev-list --all 2>/dev/null || true)"
+# コミットメタデータ（author / committer / メッセージ）。blob 検査では拾えない
+metadata="$(git log --all --format='%H %an <%ae> %cn <%ce>%n%s%n%b')"
+
+# grep の終了コードを「0=ヒット / 1=ヒットなし / 2以上=検査失敗」として扱う
+# 戻り値: 0=ヒットなし / 1=ヒットあり / 2=検査失敗
+scan() { # $1=説明 $2..=コマンド
+  local desc="$1"; shift
+  local out st
+  set +e
+  out="$("$@" 2>/dev/null)"
+  st=$?
+  set -e
+  if [[ $st -eq 0 && -n "$out" ]]; then
+    echo "NG: 禁止語ヒット（${desc}）:" >&2
+    echo "$out" | head -20 >&2
+    return 1
+  elif [[ $st -ge 2 ]]; then
+    echo "NG: 検査の実行に失敗（${desc}・exit ${st}）。fail-closed のため通しません。" >&2
+    return 2
+  fi
+  return 0
+}
 
 status=0
 words=0
 while IFS= read -r word; do
-  # 空行と # で始まるコメント行はスキップ
+  word="${word%$'\r'}" # CRLF 由来の \r を除去（偽陰性防止）
   [[ -z "$word" || "$word" == \#* ]] && continue
   words=$((words + 1))
-  hits="$(list_files | xargs -0 grep -nIiF -- "$word" 2>/dev/null || true)"
-  if [[ -n "$hits" ]]; then
-    echo "NG: 禁止語ヒット:" >&2
-    echo "$hits" >&2
-    status=1
-  fi
+
+  scan "作業ツリー" git grep --untracked -nIiF -- "$word" || status=1
   if [[ -n "$commits" ]]; then
-    hist_hits="$(git grep -nIiF -- "$word" $commits 2>/dev/null || true)"
-    if [[ -n "$hist_hits" ]]; then
-      echo "NG: 禁止語ヒット（git 履歴内）:" >&2
-      echo "$hist_hits" | head -20 >&2
-      status=1
-    fi
+    # shellcheck disable=SC2086
+    scan "git 履歴 blob" git grep -nIiF -- "$word" $commits || status=1
   fi
+  scan "コミットメタデータ" grep -niF -- "$word" <<<"$metadata" || status=1
 done < "$LIST"
+
+# 有効語 0 語は「検査していない」のと同じ（コメントだけのリスト等）— fail-closed
+if [[ "$words" -eq 0 ]]; then
+  echo "NG: 語リストに有効な語がありません（${LIST}）。fail-closed のため通しません。" >&2
+  exit 1
+fi
 
 if [[ "$status" -ne 0 ]]; then
   echo "NG: boundary-check failed" >&2
@@ -52,4 +75,4 @@ if [[ "$status" -ne 0 ]]; then
 fi
 
 file_count="$(git ls-files --cached --others --exclude-standard | wc -l | tr -d ' ')"
-echo "OK: boundary-check passed（検査語 ${words} 語・ヒット 0 件・対象 ${file_count} ファイル）"
+echo "OK: boundary-check passed（検査語 ${words} 語・ヒット 0 件・対象 ${file_count} ファイル・履歴/メタデータ込み）"

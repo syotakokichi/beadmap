@@ -5,6 +5,7 @@ name: update-demo-data
 # 境界ゲート（fail-closed）を通過した場合だけ commit / push し、
 # ゲートを通らなければ更新しない。語リストは Actions secret（非公開）で、
 # ログには語の内容もヒット詳細も出さない。
+# デプロイは pages.yml を workflow_call で直接呼ぶ（失敗がこの run の失敗として見える）。
 
 on:
   schedule:
@@ -13,7 +14,6 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
   group: update-demo-data
@@ -21,9 +21,17 @@ concurrency:
 
 jobs:
   update:
+    # main 以外からの dispatch では動かさない（更新先・デプロイ元を main に固定）
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          # 境界ゲートは全コミット履歴も検査するため shallow clone にしない
+          fetch-depth: 0
       - uses: actions/checkout@v4
         with:
           repository: syotakokichi/settlebase
@@ -42,7 +50,7 @@ jobs:
         run: |
           WORDS="$(mktemp)"
           printf '%s\n' "$BOUNDARY_WORDS" > "$WORDS"
-          # fail-closed: 語リスト secret が未設定・空なら検査できないので通さない
+          # fail-closed: secret 未設定は即中止（有効語 0 語の検査は boundary-check.sh 側でも失敗する）
           if ! grep -qve '^[[:space:]]*$' "$WORDS"; then
             echo "NG: 語リスト secret（BOUNDARY_WORDS）が未設定です。fail-closed のため更新を中止します。"
             exit 1
@@ -67,11 +75,14 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add demo/data
           git commit -m "chore: デモデータを自動更新（公開 jsonl のスナップショット）"
-          git push
+          git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"
-      - name: redeploy pages
-        if: steps.commit.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        # GITHUB_TOKEN の push は pages.yml の push トリガーを発火しないため明示的に起動する
-        run: gh workflow run pages.yml
+
+  deploy:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml

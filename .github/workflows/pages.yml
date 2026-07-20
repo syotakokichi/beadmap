@@ -12,6 +12,7 @@ on:
       - "demo/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
+  workflow_call: # update-demo-data.yml から直接呼ぶ（デプロイ失敗を呼び出し元の失敗として可視化）
 
 permissions:
   contents: read
@@ -30,6 +31,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # workflow_call 経由（自動更新の push 直後）でも常に main の最新を配信する
+          ref: main
       - name: assemble demo site
         run: |
           mkdir -p _site/data
