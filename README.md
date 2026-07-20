@@ -36,20 +36,21 @@ beadmap -port 8080   # 優先ポートの指定
 
 ## Status
 
-v1 実装済み（collector / server / ui の 3 層 + read-only 契約テスト）。
-残作業は公開ゲート通過 → GitHub 公開 → 実運用一巡。
-install 不要で気軽に試せる **静的デモページ**（サンプルデータ同梱・ブラウザ内描画のみ）も
-v1 公開後に用意する予定。
+v1 公開済み（collector / server / ui の 3 層 + read-only 契約テスト）。
+install 不要で試せる **静的デモページ**（ブラウザ内描画のみ・サーバなし）を準備中。
+beadmap 自身と [settlebase](https://github.com/syotakokichi/settlebase) の実データを
+切替表示し、開発の進捗を俯瞰している画面をそのまま見てもらえる入口にする。
 
 ## 開発の歩み
 
 最新のグラレコ（節目ごとに差し替え）:
 
-![beadmap 開発のグラフィックレコーディング](docs/devlog/assets/2026-07-19-day1.png)
+![beadmap 開発のグラフィックレコーディング](docs/devlog/assets/2026-07-20-day2.png)
 
 | 日 | 内容 | 記事 | devlog | グラレコ |
 | --- | --- | --- | --- | --- |
 | 2026-07-19 | 立ち上げ: 名前選定・境界ゲート・Go ゼロ依存の 3 層実装 | 執筆予定 | [2026-07-19-day1](docs/devlog/2026-07-19-day1.md) | [PNG](docs/devlog/assets/2026-07-19-day1.png) |
+| 2026-07-20 | v1 公開: 検証レビュー・境界ゲートの実戦・デモ方針の確定 | 執筆予定 | [2026-07-20-day2](docs/devlog/2026-07-20-day2.md) | [PNG](docs/devlog/assets/2026-07-20-day2.png) |
 
 ## read-only 契約
 
