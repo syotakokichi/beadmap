@@ -6,6 +6,10 @@ beads が正本、beadmap はその「読み取り用の地図」— 地図は�
 
 AI 開発ハーネス連載（Zenn）の一環として、開発過程（devlog / ADR / beads 履歴）ごと公開する。
 
+**▶ [静的デモを見る](https://syotakokichi.github.io/beadmap/)** — install 不要。
+連載デモ [settlebase](https://github.com/syotakokichi/settlebase) と beadmap 自身の
+実データ（スナップショット）をブラウザだけで俯瞰できる。
+
 ## Problem
 
 - CLI ベースのタスク管理（beads）は個々のタスク操作には強いが、「全体でどこまで進んだか」
@@ -37,9 +41,10 @@ beadmap -port 8080   # 優先ポートの指定
 ## Status
 
 v1 公開済み（collector / server / ui の 3 層 + read-only 契約テスト）。
-install 不要で試せる **静的デモページ**（ブラウザ内描画のみ・サーバなし）を準備中。
-beadmap 自身と [settlebase](https://github.com/syotakokichi/settlebase) の実データを
-切替表示し、開発の進捗を俯瞰している画面をそのまま見てもらえる入口にする。
+[静的デモページ](https://syotakokichi.github.io/beadmap/)も公開済み — ブラウザ内描画のみ・
+サーバなしで、beadmap 自身と settlebase の実データ（スナップショット）を切替表示できる。
+デモの組み立ては [pages.yml](.github/workflows/pages.yml)（ui/ を単一ソースとして deploy 時に構成）、
+データ生成は `go run ./cmd/gendemo`。
 
 ## 開発の歩み
 
@@ -51,6 +56,7 @@ beadmap 自身と [settlebase](https://github.com/syotakokichi/settlebase) の�
 | --- | --- | --- | --- | --- |
 | 2026-07-19 | 立ち上げ: 名前選定・境界ゲート・Go ゼロ依存の 3 層実装 | 執筆予定 | [2026-07-19-day1](docs/devlog/2026-07-19-day1.md) | [PNG](docs/devlog/assets/2026-07-19-day1.png) |
 | 2026-07-20 | v1 公開: 検証レビュー・境界ゲートの実戦・デモ方針の確定 | 執筆予定 | [2026-07-20-day2](docs/devlog/2026-07-20-day2.md) | [PNG](docs/devlog/assets/2026-07-20-day2.png) |
+| 2026-07-20 | 静的デモ公開: settlebase の進捗俯瞰をブラウザだけで | 執筆予定 | [2026-07-20-static-demo](docs/devlog/2026-07-20-static-demo.md) | （告知時に差し替え） |
 
 ## read-only 契約
 

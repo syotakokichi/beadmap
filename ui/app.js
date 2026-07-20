@@ -2,9 +2,17 @@
    データ取得は dataSource に集約する（静的デモではここだけ差し替える）。 */
 "use strict";
 
+/* 静的デモモード: demo-config.js（デモビルドのみ同梱）が window.BEADMAP_DEMO を
+   定義していれば、API の代わりに同梱スナップショット JSON を読む。 */
+const DEMO = window.BEADMAP_DEMO || null;
+let demoDataset = DEMO
+  ? DEMO.datasets.find((d) => d.id === DEMO.initial) || DEMO.datasets[0]
+  : null;
+let demoNeedsViewPick = !!DEMO; // データセット読み込み直後に中身のあるビューを初期選択する
+
 const dataSource = {
-  snapshot: () => fetchJSON("/api/snapshot"),
-  closed: () => fetchJSON("/api/closed"),
+  snapshot: () => fetchJSON(demoDataset ? demoDataset.snapshot : "/api/snapshot"),
+  closed: () => fetchJSON(demoDataset ? demoDataset.closed : "/api/closed"),
 };
 
 async function fetchJSON(url) {
@@ -65,15 +73,31 @@ function hhmmss(iso) {
   return Number.isNaN(d.getTime()) ? "" : d.toTimeString().slice(0, 8);
 }
 
+function dateYMD(iso) {
+  return iso && !Number.isNaN(new Date(iso).getTime()) ? String(iso).slice(0, 10) : "";
+}
+
 /* ---------- ヘッダ（staleness 常時表示） ---------- */
 
 function renderHeader() {
   const s = state.snap;
-  $("#source").textContent = s.source_path || "";
-  const src = s.ready_source === "bd" ? "bd" : "fallback（近似）";
-  $("#freshness").innerHTML =
-    `jsonl更新 ${relTime(s.file_mod_time) || "不明"} · 取得 ${hhmmss(s.generated_at)} · ready算出: ` +
-    (s.ready_source === "bd" ? "bd" : `<span class="warn">${src}</span>`);
+  if (DEMO) {
+    $("#source").textContent = s.source_path || "";
+    $("#freshness").textContent =
+      `スナップショット取得 ${dateYMD(s.generated_at)}（${relTime(s.generated_at) || "不明"}）`;
+    const db = $("#demo-banner");
+    db.innerHTML =
+      `静的デモ — ${dateYMD(s.generated_at)} 時点のスナップショットを表示中（自動更新なし）。` +
+      `起票・更新は bd CLI の役割。手元の実データを見るにはローカルで beadmap を起動 ` +
+      `（<a href="https://github.com/syotakokichi/beadmap">README</a>）`;
+    db.classList.remove("hidden");
+  } else {
+    $("#source").textContent = s.source_path || "";
+    const src = s.ready_source === "bd" ? "bd" : "fallback（近似）";
+    $("#freshness").innerHTML =
+      `jsonl更新 ${relTime(s.file_mod_time) || "不明"} · 取得 ${hhmmss(s.generated_at)} · ready算出: ` +
+      (s.ready_source === "bd" ? "bd" : `<span class="warn">${src}</span>`);
+  }
 
   const banner = $("#stale-banner");
   const messages = [];
@@ -492,9 +516,22 @@ function render() {
   t.textContent = state.expandAll ? "epicのみに戻す" : "子を展開";
 }
 
+/* 静的デモ: 初期ビューが空だと第一印象が「該当なし」になるため、
+   件数のあるビューへフォールバックする（表示内容は実データのまま）。 */
+async function demoPickView() {
+  for (const k of ["in_progress", "ready", "blocked", "open"]) {
+    if (tileCount(k) > 0) { state.view = k; return; }
+  }
+  if ((state.snap.counts || {}).closed) {
+    state.closed = await dataSource.closed().catch(() => null);
+    if (state.closed) state.view = "closed";
+  }
+}
+
 async function refresh() {
   try {
     state.snap = await dataSource.snapshot();
+    if (demoNeedsViewPick) { demoNeedsViewPick = false; await demoPickView(); }
     if (state.closed) state.closed = await dataSource.closed().catch(() => state.closed);
   } catch (e) {
     if (!state.snap) {
@@ -538,5 +575,28 @@ $("#f-label").addEventListener("change", (e) => { state.filters.label = e.target
 $("#f-search").addEventListener("input", (e) => { state.filters.search = e.target.value.trim(); render(); });
 $("#toggle-expand").addEventListener("click", () => { state.expandAll = !state.expandAll; render(); });
 
+/* ---------- 静的デモ: データセット切替 ---------- */
+
+(function initDemoSelect() {
+  if (!DEMO) return;
+  const sel = $("#demo-dataset");
+  sel.innerHTML = DEMO.datasets.map((d) =>
+    `<option value="${escapeHTML(d.id)}"${d.id === demoDataset.id ? " selected" : ""}>${escapeHTML(d.label)}</option>`
+  ).join("");
+  sel.classList.remove("hidden");
+  sel.onchange = () => {
+    demoDataset = DEMO.datasets.find((d) => d.id === sel.value) || DEMO.datasets[0];
+    state.snap = null;
+    state.closed = null;
+    state.selected = null;
+    state.view = "in_progress";
+    state.expandAll = false;
+    state.expanded.clear();
+    state.filters = { priority: "", label: "", search: "" };
+    demoNeedsViewPick = true;
+    refresh();
+  };
+})();
+
 refresh();
-setInterval(refresh, 30000); // 常時開いておける用の自動更新
+if (!DEMO) setInterval(refresh, 30000); // 常時開いておける用の自動更新（静的デモでは不要）

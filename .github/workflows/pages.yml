@@ -1,0 +1,47 @@
+name: pages
+
+# 静的デモを GitHub Pages に配信する。
+# ui/ を単一ソースとして deploy 時に組み立てる（repo 内に UI の複製を持たない）。
+# デモはブラウザ内描画のみ — サーバも bd も不要（Go バイナリの read-only 契約とは独立）。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ui/**"
+      - "demo/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: assemble demo site
+        run: |
+          mkdir -p _site/data
+          cp ui/index.html ui/app.js ui/style.css _site/
+          cp demo/demo-config.js _site/
+          cp demo/data/*.json _site/data/
+          # デモ設定を app.js より先に読み込ませる（ライブ UI には入れない）
+          sed -i 's|<script src="app.js">|<script src="demo-config.js"></script>\n<script src="app.js">|' _site/index.html
+          grep -q "demo-config.js" _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
