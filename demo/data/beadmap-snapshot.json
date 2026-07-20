@@ -1,6 +1,26 @@
 {
   "issues": [
     {
+      "id": "bm-5vq",
+      "title": "GitHub Actions の参照を commit SHA に固定（供給網リスク低減）",
+      "status": "open",
+      "priority": 3,
+      "issue_type": "task",
+      "description": "pages.yml / update-demo-data.yml / ci.yml で actions/checkout 等を可変 major tag で参照している。write 権限・OIDC を持つ workflow のため、検証済み commit SHA に固定し更新手段（Dependabot 等）を決める。事後レビュー R1 指摘。",
+      "created_at": "2026-07-20T13:50:23Z",
+      "updated_at": "2026-07-20T13:50:23Z"
+    },
+    {
+      "id": "bm-jym",
+      "title": "UI静的アセットにキャッシュ抑止ヘッダを付ける（旧ビルドUIの無言残留対策）",
+      "status": "open",
+      "priority": 2,
+      "issue_type": "task",
+      "description": "オーナーの実運用試用（別リポジトリの beads を -dir で表示）で発見。beadmapは毎回同じ優先ポート23237で起動するため、以前のビルドを開いたブラウザが古いapp.js/index.htmlをキャッシュから使い続け、新ビルドでも旧UIが無言で表示される（実例: 詳細ペインが旧版のまま「子（なし）」表示になり、データ層のバグと誤認しかけた）。go:embedのFSはModTimeゼロでLast-Modified/ETagが付かず、ブラウザのヒューリスティックキャッシュに委ねられているのが原因。server層でui配信にCache-Control: no-cache（またはビルドIDによるETag）を付与し、read-only契約・既存テストに影響しないことを確認する",
+      "created_at": "2026-07-20T14:14:20Z",
+      "updated_at": "2026-07-20T14:18:52Z"
+    },
+    {
       "id": "bm-rvv",
       "title": "ui: ロジック単体テストの整備（エスケープ・並び順・ツリー・フィルタ・closed opt-in）",
       "status": "open",
@@ -13,18 +33,20 @@
     }
   ],
   "ready": [
+    "bm-5vq",
+    "bm-jym",
     "bm-rvv"
   ],
   "blocked": null,
   "ready_source": "fallback",
-  "generated_at": "2026-07-20T13:51:45.786976695Z",
-  "file_mod_time": "2026-07-20T13:51:34.415358346Z",
+  "generated_at": "2026-07-20T21:09:13.128562662Z",
+  "file_mod_time": "2026-07-20T21:09:05.255023075Z",
   "source_path": "beadmap/.beads/issues.jsonl（スナップショット）",
-  "source_commit": "9750c7e",
+  "source_commit": "dd2eaac",
   "stale": false,
   "counts": {
     "closed": 8,
-    "open": 1,
-    "total": 9
+    "open": 3,
+    "total": 11
   }
 }
