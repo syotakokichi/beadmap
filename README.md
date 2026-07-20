@@ -44,7 +44,9 @@ v1 公開済み（collector / server / ui の 3 層 + read-only 契約テスト�
 [静的デモページ](https://syotakokichi.github.io/beadmap/)も公開済み — ブラウザ内描画のみ・
 サーバなしで、beadmap 自身と settlebase の実データ（スナップショット）を切替表示できる。
 デモの組み立ては [pages.yml](.github/workflows/pages.yml)（ui/ を単一ソースとして deploy 時に構成）、
-データ生成は `go run ./cmd/gendemo`。
+データ生成は `go run ./cmd/gendemo`。デモのデータは
+[update-demo-data.yml](.github/workflows/update-demo-data.yml) が毎日自動更新する
+（公開リポジトリの公開 jsonl のみを入力に、境界ゲート通過時だけ commit / push）。
 
 ## 開発の歩み
 
@@ -82,6 +84,8 @@ beadmap が正本を壊さないことは、以下の 5 項目を **構造** で
 - bd が PATH にあれば ready / blocked はライブクエリで取得する。**bd 導入時はライブクエリが正**
 - bd 未導入時は jsonl の依存関係から近似計算に fallback する（bd と完全一致する保証はない。
   一致は突き合わせテストで確認している）
+- 静的デモのデータは毎日の自動更新（境界ゲート通過時のみ）。データに変化がない日は
+  コミットせず、画面の「スナップショット取得日」は最後に実際にデータが変わった時点を指す
 
 ## 公開境界
 

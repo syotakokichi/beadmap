@@ -1,1 +1,28 @@
-{"issues":[{"id":"bm-rvv","title":"ui: ロジック単体テストの整備（エスケープ・並び順・ツリー・フィルタ・closed opt-in）","status":"open","priority":2,"issue_type":"task","description":"設計方針「各層に単体テスト」のうち UI 層が未整備（Go 層の collector / server はテスト済み）。実装検証のマルチレビューで指摘を受けて起票。XSS エスケープ（escapeHTML 適用漏れの回帰防止）・in_progress 停滞順・親子ツリー・フィルタ・closed opt-in のロジックをテスト可能な形に切り出してテストを置き、CI に組み込む","created_at":"2026-07-19T12:52:28Z","updated_at":"2026-07-19T12:53:45Z"}],"ready":["bm-rvv"],"blocked":[],"ready_source":"bd","generated_at":"2026-07-20T19:15:34.202934+09:00","file_mod_time":"2026-07-20T19:15:33.989468267+09:00","source_path":"beadmap/.beads/issues.jsonl（スナップショット）","stale":false,"counts":{"closed":7,"open":1,"total":8}}
+{
+  "issues": [
+    {
+      "id": "bm-rvv",
+      "title": "ui: ロジック単体テストの整備（エスケープ・並び順・ツリー・フィルタ・closed opt-in）",
+      "status": "open",
+      "priority": 2,
+      "issue_type": "task",
+      "description": "設計方針「各層に単体テスト」のうち UI 層が未整備（Go 層の collector / server はテスト済み）。実装検証のマルチレビューで指摘を受けて起票。XSS エスケープ（escapeHTML 適用漏れの回帰防止）・in_progress 停滞順・親子ツリー・フィルタ・closed opt-in のロジックをテスト可能な形に切り出してテストを置き、CI に組み込む",
+      "created_at": "2026-07-19T12:52:28Z",
+      "updated_at": "2026-07-19T12:53:45Z"
+    }
+  ],
+  "ready": [
+    "bm-rvv"
+  ],
+  "blocked": [],
+  "ready_source": "bd",
+  "generated_at": "2026-07-20T20:36:51.318772+09:00",
+  "file_mod_time": "2026-07-20T19:15:33.989468267+09:00",
+  "source_path": "beadmap/.beads/issues.jsonl（スナップショット）",
+  "stale": false,
+  "counts": {
+    "closed": 7,
+    "open": 1,
+    "total": 8
+  }
+}

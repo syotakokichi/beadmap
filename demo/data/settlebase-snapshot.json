@@ -1,1 +1,120 @@
-{"issues":[],"ready":[],"blocked":[],"ready_source":"bd","generated_at":"2026-07-20T19:11:22.935582+09:00","file_mod_time":"2026-07-19T23:15:43.433039311+09:00","source_path":"settlebase/.beads/issues.jsonl（スナップショット）","stale":false,"counts":{"closed":9,"total":9}}
+{
+  "issues": [
+    {
+      "id": "sb-0os",
+      "title": "ロール管理（member の権限と RLS ポリシー拡張）",
+      "status": "open",
+      "priority": 2,
+      "issue_type": "task",
+      "description": "member のロール（申請者・承認者・管理者）を定義し、RLS ポリシーを役割ベースに拡張する。",
+      "created_at": "2026-07-20T11:33:33Z",
+      "updated_at": "2026-07-20T11:33:33Z",
+      "dependents": [
+        "sb-riv"
+      ]
+    },
+    {
+      "id": "sb-1un",
+      "title": "部門ウォレット UI の最初の縦切り（一覧・残高表示）",
+      "status": "open",
+      "priority": 2,
+      "issue_type": "task",
+      "description": "Next.js 側の最初の画面。部門ウォレットの一覧と残高表示を、RLS 越しの読み取りで成立させる縦切り。画面設計から入る（設計過程も連載素材）。",
+      "notes": "jsonl export flush",
+      "created_at": "2026-07-20T11:33:32Z",
+      "updated_at": "2026-07-20T11:34:09Z"
+    },
+    {
+      "id": "sb-2o4",
+      "title": "バックエンド構成の比較検討（Server Actions + RLS 単層 vs 独立バックエンド + 多層防御）",
+      "status": "open",
+      "priority": 2,
+      "issue_type": "task",
+      "description": "台帳・振替の実装前に、A案（Next.js Server Actions + RLS 単層）と B案（独立バックエンド + RLS を多層防御の最終ラインにする構成）を比較して決める。判断軸: 長時間・非同期処理 / トランザクションとドメイン層の置き場 / 連携・分業。決定は ADR に記録。",
+      "created_at": "2026-07-20T11:33:33Z",
+      "updated_at": "2026-07-20T11:33:33Z",
+      "dependents": [
+        "sb-k1h"
+      ]
+    },
+    {
+      "id": "sb-dnz",
+      "title": "maker-checker 承認フロー",
+      "status": "open",
+      "priority": 3,
+      "issue_type": "task",
+      "description": "申請者（maker）と承認者（checker)を分離する承認フロー。自分の申請は自分で承認できない制約を構造で保証する。",
+      "created_at": "2026-07-20T11:33:46Z",
+      "updated_at": "2026-07-20T20:33:53Z",
+      "blocked_by": [
+        "sb-riv"
+      ],
+      "dependents": [
+        "sb-st3"
+      ]
+    },
+    {
+      "id": "sb-k1h",
+      "title": "append-only 台帳（訂正は逆仕訳）",
+      "status": "open",
+      "priority": 3,
+      "issue_type": "task",
+      "description": "残高の根拠となる台帳。行の更新・削除をせず、訂正は逆仕訳で積む append-only 構成。",
+      "created_at": "2026-07-20T11:33:46Z",
+      "updated_at": "2026-07-20T20:33:54Z",
+      "blocked_by": [
+        "sb-2o4"
+      ]
+    },
+    {
+      "id": "sb-riv",
+      "title": "振替・精算申請（冪等キー）",
+      "status": "open",
+      "priority": 3,
+      "issue_type": "task",
+      "description": "部門ウォレット間の振替と精算申請。二重送信を防ぐ冪等キーを設計に含める。",
+      "created_at": "2026-07-20T11:33:45Z",
+      "updated_at": "2026-07-20T20:33:53Z",
+      "blocked_by": [
+        "sb-0os"
+      ],
+      "dependents": [
+        "sb-dnz"
+      ]
+    },
+    {
+      "id": "sb-st3",
+      "title": "監査ログ（誰がいつ何をしたか）",
+      "status": "open",
+      "priority": 3,
+      "issue_type": "task",
+      "description": "申請・承認・振替の操作記録。改ざんしにくい形で残し、画面から追える状態にする。",
+      "created_at": "2026-07-20T11:33:47Z",
+      "updated_at": "2026-07-20T20:33:54Z",
+      "blocked_by": [
+        "sb-dnz"
+      ]
+    }
+  ],
+  "ready": [
+    "sb-0os",
+    "sb-2o4",
+    "sb-1un"
+  ],
+  "blocked": [
+    "sb-st3",
+    "sb-dnz",
+    "sb-k1h",
+    "sb-riv"
+  ],
+  "ready_source": "bd",
+  "generated_at": "2026-07-20T20:36:50.545008+09:00",
+  "file_mod_time": "2026-07-20T20:34:09.477200404+09:00",
+  "source_path": "settlebase/.beads/issues.jsonl（スナップショット）",
+  "stale": false,
+  "counts": {
+    "closed": 9,
+    "open": 7,
+    "total": 16
+  }
+}

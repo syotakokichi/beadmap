@@ -88,6 +88,8 @@ func main() {
 		}
 		enc := json.NewEncoder(f)
 		enc.SetEscapeHTML(false)
+		// 行単位の diff 判定（自動更新でタイムスタンプ行だけの変化を無視する）のため整形出力
+		enc.SetIndent("", "  ")
 		if err := enc.Encode(env); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)

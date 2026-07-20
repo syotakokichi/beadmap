@@ -1,1 +1,126 @@
-{"issues":[{"id":"sb-4e3","title":"pgTAP 認可テスト: RLS 有効検査・テナント分離","status":"closed","priority":1,"issue_type":"task","description":"supabase/tests/ に 001-rls-enabled.sql（public スキーマ全テーブルの RLS 有効を機械検査）と 002-tenant-isolation.sql（Tenant A から B のデータが見えない・B への書き込み拒否）を追加。各ファイルはトランザクション内で自己完結（pgtap extension 作成・ヘルパー定義・rollback）。supabase test db --linked で green。","close_reason":"001/002 実装・CI（db-tests）で PR/main とも green。supabase test db --linked は pg_prove コンテナが Docker 必須と判明したため不採用に訂正（ADR-0003）。pgTAP の正は CI","created_at":"2026-07-19T02:39:07Z","updated_at":"2026-07-19T05:09:51Z","closed_at":"2026-07-19T05:09:51Z"},{"id":"sb-8w0","title":"境界破りデモ PR の赤 CI 証跡化","status":"closed","priority":1,"issue_type":"task","description":"ブランチ demo/broken-tenant-boundary で意図的に境界を破る変更のドラフト PR を作成（本文冒頭に意図的デモと明記）。CI 赤ラン確認後に close して証跡として残す（誤マージ防止のため open のまま残さない）。","close_reason":"デモPR #2（RLS忘れテーブル追加）で db-tests 赤ラン実証（run 29674414074・001の網が検出）→ close で証跡化。詳細は docs/devlog/2026-07-19-tenant-boundary.md","created_at":"2026-07-19T02:39:08Z","updated_at":"2026-07-19T05:12:14Z","closed_at":"2026-07-19T05:12:14Z"},{"id":"sb-aqi","title":"記録整備: ADR・devlog・README Status","status":"closed","priority":1,"issue_type":"task","description":"ADR（pgTAP テスト戦略・自作テストヘルパー・supabase/ root 配置・force RLS 不採用）、devlog（実装過程・境界チェック記録）、README の Status 節を「スキーマ・RLS・認可テスト実装済み」に更新する。","close_reason":"ADR-0002/0003（supabase root配置・pgTAPテスト戦略+linked前提の訂正）、devlog 2本（境界ゲート・テナント境界）、README Status 更新済み","created_at":"2026-07-19T02:39:08Z","updated_at":"2026-07-19T05:12:15Z","closed_at":"2026-07-19T05:12:15Z"},{"id":"sb-bjq","title":"ハーネス初期化: CLAUDE.md・boundary-check ルール/コマンド・verify コマンド","status":"closed","priority":1,"issue_type":"task","assignee":"syotakokichi","description":"CLAUDE.md（境界・検証・タスク運用の入口）、.claude/rules/boundary-check.md（境界チェック 5 項目の一般形）、.claude/commands/boundary-check.md（実行手順）、.claude/commands/verify.md（テスト+lint+境界ゲートの最小検証手順）を追加する。","close_reason":"CLAUDE.md を骨子版に置き換え（公開境界を冒頭・beads managed block 維持）、.claude/commands/verify.md 追加。markdownlint/lychee green","created_at":"2026-07-19T02:39:05Z","updated_at":"2026-07-19T02:51:38Z","closed_at":"2026-07-19T02:51:38Z"},{"id":"sb-lbo","title":"境界チェックゲートの整備（scripts/boundary-check.sh・fail-closed）","status":"closed","priority":1,"issue_type":"task","assignee":"syotakokichi","description":"push 前に必ず実行する境界チェックゲートを追加する。非公開の語リスト（~/.config/settlebase/boundary-words.txt）を参照して repo 全体を grep し、ヒット 0 件で通過。リストファイルが存在しない場合は exit 1 で停止する（fail-closed）。CI には含めない（リストが非公開のため）。","close_reason":"scripts/boundary-check.sh を fail-closed で実装（正常系・リスト欠如・検出系の3動作を確認）。rules/commands 化し devlog に証跡記録","created_at":"2026-07-19T02:39:05Z","updated_at":"2026-07-19T02:51:37Z","closed_at":"2026-07-19T02:51:37Z"},{"id":"sb-p0v","title":"スキーマ migration: tenants / members / wallets","status":"closed","priority":1,"issue_type":"task","description":"supabase init（repo root）+ hosted プロジェクトへ link。migration で tenants（id, name）/ members（tenant_id, user_id, unique）/ wallets（id, tenant_id, name, balance bigint）と tenant_id インデックスを追加する。","close_reason":"migration 20260719025419 で tenants/members/wallets+インデックス実装。CI green・hosted 適用済み（migration list 一致確認）","created_at":"2026-07-19T02:39:06Z","updated_at":"2026-07-19T05:09:50Z","closed_at":"2026-07-19T05:09:50Z"},{"id":"sb-uvq","title":"CI: db-tests ワークフロー新設","status":"closed","priority":1,"issue_type":"task","description":".github/workflows/db-tests.yml を新設（既存 harness.yml とは責務分離）。CI では supabase db start + supabase test db（Docker）で pgTAP を実行する。","close_reason":"db-tests.yml 新設（supabase db start + supabase test db）。PR #1 と main 8567c30 で green（run 29674240516）","created_at":"2026-07-19T02:39:08Z","updated_at":"2026-07-19T05:09:52Z","closed_at":"2026-07-19T05:09:52Z"},{"id":"sb-yxv","title":"RLS 有効化とポリシー migration","status":"closed","priority":1,"issue_type":"task","description":"3 テーブルの RLS 有効化、private スキーマの security definer ヘルパー関数 user_tenant_ids()、authenticated 向けポリシー（select は自テナント限定・wallets insert に with check）。anon には何も許可しない。supabase db push で hosted に適用する。","close_reason":"migration 20260719025420 で RLS 有効化+security definer ヘルパー+authenticated 限定ポリシー。CI で権限の環境差が発覚し revoke all+最小 grant を明示する設計に修正。hosted 適用済み","created_at":"2026-07-19T02:39:06Z","updated_at":"2026-07-19T05:09:51Z","closed_at":"2026-07-19T05:09:51Z"},{"id":"sb-zs1","title":"危険実装 fixture テスト: 境界破りの検出デモ","status":"closed","priority":1,"issue_type":"task","description":"supabase/tests/003-broken-example.sql: トランザクション内で tenant_id 条件漏れの危険実装（security_invoker off のビュー等）を作り、リーク発生とテストによる検出を実証して rollback する。","close_reason":"003 実装（RLS 忘れテーブルの検出網実証+security_invoker off ビューのリーク実証と対策）。CI green","created_at":"2026-07-19T02:39:07Z","updated_at":"2026-07-19T05:09:52Z","closed_at":"2026-07-19T05:09:52Z"}],"ready":null,"blocked":null,"ready_source":"","generated_at":"2026-07-20T19:11:22.935582+09:00","file_mod_time":"2026-07-19T23:15:43.433039311+09:00","source_path":"settlebase/.beads/issues.jsonl（スナップショット）","stale":false,"counts":{"closed":9,"total":9}}
+{
+  "issues": [
+    {
+      "id": "sb-4e3",
+      "title": "pgTAP 認可テスト: RLS 有効検査・テナント分離",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "supabase/tests/ に 001-rls-enabled.sql（public スキーマ全テーブルの RLS 有効を機械検査）と 002-tenant-isolation.sql（Tenant A から B のデータが見えない・B への書き込み拒否）を追加。各ファイルはトランザクション内で自己完結（pgtap extension 作成・ヘルパー定義・rollback）。supabase test db --linked で green。",
+      "close_reason": "001/002 実装・CI（db-tests）で PR/main とも green。supabase test db --linked は pg_prove コンテナが Docker 必須と判明したため不採用に訂正（ADR-0003）。pgTAP の正は CI",
+      "created_at": "2026-07-19T02:39:07Z",
+      "updated_at": "2026-07-19T05:09:51Z",
+      "closed_at": "2026-07-19T05:09:51Z"
+    },
+    {
+      "id": "sb-8w0",
+      "title": "境界破りデモ PR の赤 CI 証跡化",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "ブランチ demo/broken-tenant-boundary で意図的に境界を破る変更のドラフト PR を作成（本文冒頭に意図的デモと明記）。CI 赤ラン確認後に close して証跡として残す（誤マージ防止のため open のまま残さない）。",
+      "close_reason": "デモPR #2（RLS忘れテーブル追加）で db-tests 赤ラン実証（run 29674414074・001の網が検出）→ close で証跡化。詳細は docs/devlog/2026-07-19-tenant-boundary.md",
+      "created_at": "2026-07-19T02:39:08Z",
+      "updated_at": "2026-07-19T05:12:14Z",
+      "closed_at": "2026-07-19T05:12:14Z"
+    },
+    {
+      "id": "sb-aqi",
+      "title": "記録整備: ADR・devlog・README Status",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "ADR（pgTAP テスト戦略・自作テストヘルパー・supabase/ root 配置・force RLS 不採用）、devlog（実装過程・境界チェック記録）、README の Status 節を「スキーマ・RLS・認可テスト実装済み」に更新する。",
+      "close_reason": "ADR-0002/0003（supabase root配置・pgTAPテスト戦略+linked前提の訂正）、devlog 2本（境界ゲート・テナント境界）、README Status 更新済み",
+      "created_at": "2026-07-19T02:39:08Z",
+      "updated_at": "2026-07-19T05:12:15Z",
+      "closed_at": "2026-07-19T05:12:15Z"
+    },
+    {
+      "id": "sb-bjq",
+      "title": "ハーネス初期化: CLAUDE.md・boundary-check ルール/コマンド・verify コマンド",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "assignee": "syotakokichi",
+      "description": "CLAUDE.md（境界・検証・タスク運用の入口）、.claude/rules/boundary-check.md（境界チェック 5 項目の一般形）、.claude/commands/boundary-check.md（実行手順）、.claude/commands/verify.md（テスト+lint+境界ゲートの最小検証手順）を追加する。",
+      "close_reason": "CLAUDE.md を骨子版に置き換え（公開境界を冒頭・beads managed block 維持）、.claude/commands/verify.md 追加。markdownlint/lychee green",
+      "created_at": "2026-07-19T02:39:05Z",
+      "updated_at": "2026-07-19T02:51:38Z",
+      "closed_at": "2026-07-19T02:51:38Z"
+    },
+    {
+      "id": "sb-lbo",
+      "title": "境界チェックゲートの整備（scripts/boundary-check.sh・fail-closed）",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "assignee": "syotakokichi",
+      "description": "push 前に必ず実行する境界チェックゲートを追加する。非公開の語リスト（~/.config/settlebase/boundary-words.txt）を参照して repo 全体を grep し、ヒット 0 件で通過。リストファイルが存在しない場合は exit 1 で停止する（fail-closed）。CI には含めない（リストが非公開のため）。",
+      "close_reason": "scripts/boundary-check.sh を fail-closed で実装（正常系・リスト欠如・検出系の3動作を確認）。rules/commands 化し devlog に証跡記録",
+      "created_at": "2026-07-19T02:39:05Z",
+      "updated_at": "2026-07-19T02:51:37Z",
+      "closed_at": "2026-07-19T02:51:37Z"
+    },
+    {
+      "id": "sb-p0v",
+      "title": "スキーマ migration: tenants / members / wallets",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "supabase init（repo root）+ hosted プロジェクトへ link。migration で tenants（id, name）/ members（tenant_id, user_id, unique）/ wallets（id, tenant_id, name, balance bigint）と tenant_id インデックスを追加する。",
+      "close_reason": "migration 20260719025419 で tenants/members/wallets+インデックス実装。CI green・hosted 適用済み（migration list 一致確認）",
+      "created_at": "2026-07-19T02:39:06Z",
+      "updated_at": "2026-07-19T05:09:50Z",
+      "closed_at": "2026-07-19T05:09:50Z"
+    },
+    {
+      "id": "sb-uvq",
+      "title": "CI: db-tests ワークフロー新設",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": ".github/workflows/db-tests.yml を新設（既存 harness.yml とは責務分離）。CI では supabase db start + supabase test db（Docker）で pgTAP を実行する。",
+      "close_reason": "db-tests.yml 新設（supabase db start + supabase test db）。PR #1 と main 8567c30 で green（run 29674240516）",
+      "created_at": "2026-07-19T02:39:08Z",
+      "updated_at": "2026-07-19T05:09:52Z",
+      "closed_at": "2026-07-19T05:09:52Z"
+    },
+    {
+      "id": "sb-yxv",
+      "title": "RLS 有効化とポリシー migration",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "3 テーブルの RLS 有効化、private スキーマの security definer ヘルパー関数 user_tenant_ids()、authenticated 向けポリシー（select は自テナント限定・wallets insert に with check）。anon には何も許可しない。supabase db push で hosted に適用する。",
+      "close_reason": "migration 20260719025420 で RLS 有効化+security definer ヘルパー+authenticated 限定ポリシー。CI で権限の環境差が発覚し revoke all+最小 grant を明示する設計に修正。hosted 適用済み",
+      "created_at": "2026-07-19T02:39:06Z",
+      "updated_at": "2026-07-19T05:09:51Z",
+      "closed_at": "2026-07-19T05:09:51Z"
+    },
+    {
+      "id": "sb-zs1",
+      "title": "危険実装 fixture テスト: 境界破りの検出デモ",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "supabase/tests/003-broken-example.sql: トランザクション内で tenant_id 条件漏れの危険実装（security_invoker off のビュー等）を作り、リーク発生とテストによる検出を実証して rollback する。",
+      "close_reason": "003 実装（RLS 忘れテーブルの検出網実証+security_invoker off ビューのリーク実証と対策）。CI green",
+      "created_at": "2026-07-19T02:39:07Z",
+      "updated_at": "2026-07-19T05:09:52Z",
+      "closed_at": "2026-07-19T05:09:52Z"
+    }
+  ],
+  "ready": null,
+  "blocked": null,
+  "ready_source": "",
+  "generated_at": "2026-07-20T20:36:50.545008+09:00",
+  "file_mod_time": "2026-07-20T20:34:09.477200404+09:00",
+  "source_path": "settlebase/.beads/issues.jsonl（スナップショット）",
+  "stale": false,
+  "counts": {
+    "closed": 9,
+    "open": 7,
+    "total": 16
+  }
+}

@@ -1,0 +1,77 @@
+name: update-demo-data
+
+# 静的デモのデータを毎日更新する。
+# 入力は公開リポジトリの公開データ（.beads/issues.jsonl）のみ。
+# 境界ゲート（fail-closed）を通過した場合だけ commit / push し、
+# ゲートを通らなければ更新しない。語リストは Actions secret（非公開）で、
+# ログには語の内容もヒット詳細も出さない。
+
+on:
+  schedule:
+    - cron: "0 20 * * *" # 毎日 05:00 JST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: update-demo-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: syotakokichi/settlebase
+          path: .settlebase-src
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: regenerate demo data
+        run: |
+          go run ./cmd/gendemo -dir .settlebase-src -name settlebase
+          go run ./cmd/gendemo -dir . -name beadmap
+          rm -rf .settlebase-src
+      - name: boundary gate (fail-closed)
+        env:
+          BOUNDARY_WORDS: ${{ secrets.BOUNDARY_WORDS }}
+        run: |
+          WORDS="$(mktemp)"
+          printf '%s\n' "$BOUNDARY_WORDS" > "$WORDS"
+          # fail-closed: 語リスト secret が未設定・空なら検査できないので通さない
+          if ! grep -qve '^[[:space:]]*$' "$WORDS"; then
+            echo "NG: 語リスト secret（BOUNDARY_WORDS）が未設定です。fail-closed のため更新を中止します。"
+            exit 1
+          fi
+          # 語の内容・ヒット詳細をログに出さない（詳細はローカルで再現する）
+          if ! BOUNDARY_WORDS_FILE="$WORDS" bash scripts/boundary-check.sh >/dev/null 2>&1; then
+            echo "NG: 境界ゲート不通過のため更新を中止しました（詳細はローカルで scripts/boundary-check.sh）"
+            exit 1
+          fi
+          echo "OK: boundary gate passed"
+      - name: commit if changed
+        id: commit
+        run: |
+          # タイムスタンプ行だけの変化は「データ変化なし」とみなす
+          if git diff --quiet -I '"(generated_at|file_mod_time)":' -- demo/data; then
+            git checkout -- demo/data
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "データ変化なし（コミットしない）"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add demo/data
+          git commit -m "chore: デモデータを自動更新（公開 jsonl のスナップショット）"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: redeploy pages
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # GITHUB_TOKEN の push は pages.yml の push トリガーを発火しないため明示的に起動する
+        run: gh workflow run pages.yml

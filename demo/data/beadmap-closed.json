@@ -1,1 +1,132 @@
-{"issues":[{"id":"bm-92g","title":"beadmap v1 リリース","status":"closed","priority":1,"issue_type":"epic","description":"read-only の beads 進捗ビューア v1 を公開する。\n\n## 完了条件\n\n- [x] collector / server / ui の 3 層実装（collector / server は単体テスト済み。UI ロジックの単体テストは bm-rvv で追補）\n- [x] read-only 契約 5 項目の対応テスト\n- [ ] 境界ゲート通過と GitHub 公開\n- [ ] 公開後の実運用一巡（起票 → viewer 反映）","notes":"2026-07-20 v1公開: https://github.com/syotakokichi/beadmap（jsonl export フラッシュ用の記録追記）","close_reason":"v1 リリース完了。collector/server/ui 3層 + read-only 契約テスト + 文書（README/devlog/ADR）を整備し GitHub 公開。残タスクは独立 bead（bm-ftm 静的デモ・bm-rvv UIテスト）で継続","created_at":"2026-07-19T11:50:07Z","updated_at":"2026-07-20T09:45:27Z","closed_at":"2026-07-20T09:42:50Z","children":["bm-auj","bm-bia","bm-nl2","bm-p8q","bm-tuo"]},{"id":"bm-auj","title":"公開ゲート: boundary-check 通過と GitHub 公開・実運用一巡","status":"closed","priority":1,"issue_type":"task","description":"fail-closed の禁止語ゲートと公開前チェック 4 点を通過してから一発公開する。\n\n## 手順\n\n1. `scripts/boundary-check.sh` を実行（fail-closed）\n2. 公開前チェック 4 点を確認\n3. `gh repo create --source=. --push` で一発公開\n4. 公開後に起票 → viewer 反映の一巡を確認\n\n## 注意\n\n- push は境界ゲート通過後のみ。**通過前に push しない**","close_reason":"公開ゲート通過（boundary-check 11語0件・履歴検査込み / lychee 20 links 0 errors / markdownlint 0 / go test green / 公開前4点チェックOK）→ gh repo create --source=. --push で公開完了: https://github.com/syotakokichi/beadmap","created_at":"2026-07-19T11:50:10Z","updated_at":"2026-07-20T09:42:49Z","closed_at":"2026-07-20T09:42:49Z","parent_id":"bm-92g","blocked_by":["bm-nl2","bm-p8q"]},{"id":"bm-bia","title":"collector: jsonl parser・bd ライブクエリ・fallback 計算","status":"closed","priority":1,"issue_type":"task","description":"issues.jsonl の正規化（未知フィールド無視・必須欠落エラー）、bd の読み取り専用固定引数クエリ、bd 未導入時の近似計算","close_reason":"単体テスト+実データ突き合わせ green（fallback と bd ライブクエリの結果が一致）","created_at":"2026-07-19T11:50:07Z","updated_at":"2026-07-19T11:50:16Z","closed_at":"2026-07-19T11:50:16Z","parent_id":"bm-92g"},{"id":"bm-ftm","title":"静的デモページ: サンプルデータ同梱でブラウザだけで触れる beadmap","status":"closed","priority":1,"issue_type":"task","assignee":"syotakokichi","description":"install 不要で気軽に見てもらう入口を作る。\n\n- ui/ の HTML/CSS/JS をそのまま流用し、サンプルの issues スナップショット（JSON）を同梱してブラウザ内だけで描画する\n- サーバなし・bd なし・書き込みなし\n- GitHub Pages で配信し、README から「デモを見る」導線を張る","design":"## 実装方針\n\n- UI のデータ取得は `dataSource` に集約済み。live（`/api/snapshot`）と static（同梱 JSON）をここで差し替える\n- Go サーバの read-only 契約（127.0.0.1 バインド等）には手を入れない\n- **データ切替**: beadmap 自身（bm-*）⇔ settlebase 実データ の 2 データセットを切替表示する\n  - settlebase データは既公開の `.beads/issues.jsonl` のスナップショットを同梱（公開済み情報のみ。同梱前に boundary-check 通過）\n  - スナップショット取得日を staleness 表示に載せ「これは静的スナップショット」と明示する\n- GitHub Pages で配信し、beadmap README と settlebase README の両方から「デモを見る」導線を張る\n\n## 決定事項（2026-07-20 グリル）\n\n- 目的の主経路: 「settlebase のタスクを全体進捗を俯瞰しながら進めている様子」を外の人が実際に画面で見られる入口はこのデモが担う（記事スクショだけにしない）\n- 公開順序: beadmap repo はデモに先行して公開。X 告知・記事はデモが揃ってから（公開と告知を分離）\n- 対象外: GitHub Actions による settlebase データの自動更新（後続 bead で判断）","acceptance_criteria":"1. GitHub Pages でデモが公開され、ブラウザだけで beadmap 自身（bm-*）と settlebase 実データの切替表示ができる（サーバ・bd・install 不要）\n2. スナップショット取得日が画面に表示され、静的データであることが明示される\n3. beadmap README と settlebase README の両方からデモへの導線がある\n4. 同梱データは公開済み情報のみ（boundary-check 通過）","notes":"2026-07-20 グリル反映: デモの目的を「settlebase の進捗俯瞰を外から見てもらう主経路」に格上げし、データ切替（bm-* ⇔ settlebase 実データ）+ GitHub Pages 公開をスコープに追加。P2→P1。自動更新は対象外（後続 bead で判断）。告知はデモ完成後。","close_reason":"静的デモ公開完了: https://syotakokichi.github.io/beadmap/ 。AC1: Pages でデモ公開・bm-*⇔settlebase 切替表示OK（本番で確認） AC2: スナップショット取得日+静的デモバナー常時表示 AC3: beadmap/settlebase 両READMEに導線 AC4: 同梱データは公開済み情報のみ・boundary-check通過（51ファイル0件）。ui単一ソース+pages.yml組み立て・cmd/gendemo生成・空ビュー自動フォールバック・デモは自動更新なし","created_at":"2026-07-19T12:02:05Z","updated_at":"2026-07-20T10:15:33Z","closed_at":"2026-07-20T10:15:33Z","blocked_by":["bm-p8q"]},{"id":"bm-nl2","title":"docs: README の read-only 契約表と使い方を仕上げる","status":"closed","priority":2,"issue_type":"task","description":"契約 5 項目と対応テストの表・データ鮮度の説明・go install 手順","close_reason":"README完成（read-only契約5項目+対応テスト表・使い方・データ鮮度・公開境界）","created_at":"2026-07-19T11:50:09Z","updated_at":"2026-07-19T12:10:30Z","closed_at":"2026-07-19T12:10:30Z","parent_id":"bm-92g","dependents":["bm-auj"]},{"id":"bm-p8q","title":"ui: サマリータイル・親子ツリー・詳細ペイン・staleness 表示","status":"closed","priority":1,"issue_type":"task","assignee":"syotakokichi","description":"画面レイアウトの赤入れ確定後に素の HTML/CSS/JS で実装。進行中は更新が古い順・closed は opt-in 取得","close_reason":"UI実装完了。赤入れ確定案どおり（日本語/右ペイン/ダーク）。自repo7件・9件repo・67件repoの実データで表示確認済み","created_at":"2026-07-19T11:50:08Z","updated_at":"2026-07-19T12:10:29Z","closed_at":"2026-07-19T12:10:29Z","parent_id":"bm-92g","dependents":["bm-auj","bm-ftm"]},{"id":"bm-tuo","title":"server: 127.0.0.1 限定・GET のみの read-only 配信","status":"closed","priority":1,"issue_type":"task","description":"GET 以外 405・JSON API・go:embed 静的配信・stale 明示を実装する。\n\n| 契約 | テスト |\n| --- | --- |\n| 127.0.0.1 のみ | TestListenLocalBindsLoopbackOnly |\n| GET 以外 405 | TestWriteMethodsRejected |\n| stale 明示 | TestStaleServesLastGoodSnapshot |","close_reason":"契約テスト green（GET以外405・loopback限定・stale明示・closed opt-in）","created_at":"2026-07-19T11:50:08Z","updated_at":"2026-07-19T12:28:46Z","closed_at":"2026-07-19T11:50:16Z","parent_id":"bm-92g"}],"ready":null,"blocked":null,"ready_source":"","generated_at":"2026-07-20T19:15:34.202934+09:00","file_mod_time":"2026-07-20T19:15:33.989468267+09:00","source_path":"beadmap/.beads/issues.jsonl（スナップショット）","stale":false,"counts":{"closed":7,"open":1,"total":8}}
+{
+  "issues": [
+    {
+      "id": "bm-92g",
+      "title": "beadmap v1 リリース",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "epic",
+      "description": "read-only の beads 進捗ビューア v1 を公開する。\n\n## 完了条件\n\n- [x] collector / server / ui の 3 層実装（collector / server は単体テスト済み。UI ロジックの単体テストは bm-rvv で追補）\n- [x] read-only 契約 5 項目の対応テスト\n- [ ] 境界ゲート通過と GitHub 公開\n- [ ] 公開後の実運用一巡（起票 → viewer 反映）",
+      "notes": "2026-07-20 v1公開: https://github.com/syotakokichi/beadmap（jsonl export フラッシュ用の記録追記）",
+      "close_reason": "v1 リリース完了。collector/server/ui 3層 + read-only 契約テスト + 文書（README/devlog/ADR）を整備し GitHub 公開。残タスクは独立 bead（bm-ftm 静的デモ・bm-rvv UIテスト）で継続",
+      "created_at": "2026-07-19T11:50:07Z",
+      "updated_at": "2026-07-20T09:45:27Z",
+      "closed_at": "2026-07-20T09:42:50Z",
+      "children": [
+        "bm-auj",
+        "bm-bia",
+        "bm-nl2",
+        "bm-p8q",
+        "bm-tuo"
+      ]
+    },
+    {
+      "id": "bm-auj",
+      "title": "公開ゲート: boundary-check 通過と GitHub 公開・実運用一巡",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "fail-closed の禁止語ゲートと公開前チェック 4 点を通過してから一発公開する。\n\n## 手順\n\n1. `scripts/boundary-check.sh` を実行（fail-closed）\n2. 公開前チェック 4 点を確認\n3. `gh repo create --source=. --push` で一発公開\n4. 公開後に起票 → viewer 反映の一巡を確認\n\n## 注意\n\n- push は境界ゲート通過後のみ。**通過前に push しない**",
+      "close_reason": "公開ゲート通過（boundary-check 11語0件・履歴検査込み / lychee 20 links 0 errors / markdownlint 0 / go test green / 公開前4点チェックOK）→ gh repo create --source=. --push で公開完了: https://github.com/syotakokichi/beadmap",
+      "created_at": "2026-07-19T11:50:10Z",
+      "updated_at": "2026-07-20T09:42:49Z",
+      "closed_at": "2026-07-20T09:42:49Z",
+      "parent_id": "bm-92g",
+      "blocked_by": [
+        "bm-nl2",
+        "bm-p8q"
+      ]
+    },
+    {
+      "id": "bm-bia",
+      "title": "collector: jsonl parser・bd ライブクエリ・fallback 計算",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "issues.jsonl の正規化（未知フィールド無視・必須欠落エラー）、bd の読み取り専用固定引数クエリ、bd 未導入時の近似計算",
+      "close_reason": "単体テスト+実データ突き合わせ green（fallback と bd ライブクエリの結果が一致）",
+      "created_at": "2026-07-19T11:50:07Z",
+      "updated_at": "2026-07-19T11:50:16Z",
+      "closed_at": "2026-07-19T11:50:16Z",
+      "parent_id": "bm-92g"
+    },
+    {
+      "id": "bm-ftm",
+      "title": "静的デモページ: サンプルデータ同梱でブラウザだけで触れる beadmap",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "assignee": "syotakokichi",
+      "description": "install 不要で気軽に見てもらう入口を作る。\n\n- ui/ の HTML/CSS/JS をそのまま流用し、サンプルの issues スナップショット（JSON）を同梱してブラウザ内だけで描画する\n- サーバなし・bd なし・書き込みなし\n- GitHub Pages で配信し、README から「デモを見る」導線を張る",
+      "design": "## 実装方針\n\n- UI のデータ取得は `dataSource` に集約済み。live（`/api/snapshot`）と static（同梱 JSON）をここで差し替える\n- Go サーバの read-only 契約（127.0.0.1 バインド等）には手を入れない\n- **データ切替**: beadmap 自身（bm-*）⇔ settlebase 実データ の 2 データセットを切替表示する\n  - settlebase データは既公開の `.beads/issues.jsonl` のスナップショットを同梱（公開済み情報のみ。同梱前に boundary-check 通過）\n  - スナップショット取得日を staleness 表示に載せ「これは静的スナップショット」と明示する\n- GitHub Pages で配信し、beadmap README と settlebase README の両方から「デモを見る」導線を張る\n\n## 決定事項（2026-07-20 グリル）\n\n- 目的の主経路: 「settlebase のタスクを全体進捗を俯瞰しながら進めている様子」を外の人が実際に画面で見られる入口はこのデモが担う（記事スクショだけにしない）\n- 公開順序: beadmap repo はデモに先行して公開。X 告知・記事はデモが揃ってから（公開と告知を分離）\n- 対象外: GitHub Actions による settlebase データの自動更新（後続 bead で判断）",
+      "acceptance_criteria": "1. GitHub Pages でデモが公開され、ブラウザだけで beadmap 自身（bm-*）と settlebase 実データの切替表示ができる（サーバ・bd・install 不要）\n2. スナップショット取得日が画面に表示され、静的データであることが明示される\n3. beadmap README と settlebase README の両方からデモへの導線がある\n4. 同梱データは公開済み情報のみ（boundary-check 通過）",
+      "notes": "2026-07-20 グリル反映: デモの目的を「settlebase の進捗俯瞰を外から見てもらう主経路」に格上げし、データ切替（bm-* ⇔ settlebase 実データ）+ GitHub Pages 公開をスコープに追加。P2→P1。自動更新は対象外（後続 bead で判断）。告知はデモ完成後。",
+      "close_reason": "静的デモ公開完了: https://syotakokichi.github.io/beadmap/ 。AC1: Pages でデモ公開・bm-*⇔settlebase 切替表示OK（本番で確認） AC2: スナップショット取得日+静的デモバナー常時表示 AC3: beadmap/settlebase 両READMEに導線 AC4: 同梱データは公開済み情報のみ・boundary-check通過（51ファイル0件）。ui単一ソース+pages.yml組み立て・cmd/gendemo生成・空ビュー自動フォールバック・デモは自動更新なし",
+      "created_at": "2026-07-19T12:02:05Z",
+      "updated_at": "2026-07-20T10:15:33Z",
+      "closed_at": "2026-07-20T10:15:33Z",
+      "blocked_by": [
+        "bm-p8q"
+      ]
+    },
+    {
+      "id": "bm-nl2",
+      "title": "docs: README の read-only 契約表と使い方を仕上げる",
+      "status": "closed",
+      "priority": 2,
+      "issue_type": "task",
+      "description": "契約 5 項目と対応テストの表・データ鮮度の説明・go install 手順",
+      "close_reason": "README完成（read-only契約5項目+対応テスト表・使い方・データ鮮度・公開境界）",
+      "created_at": "2026-07-19T11:50:09Z",
+      "updated_at": "2026-07-19T12:10:30Z",
+      "closed_at": "2026-07-19T12:10:30Z",
+      "parent_id": "bm-92g",
+      "dependents": [
+        "bm-auj"
+      ]
+    },
+    {
+      "id": "bm-p8q",
+      "title": "ui: サマリータイル・親子ツリー・詳細ペイン・staleness 表示",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "assignee": "syotakokichi",
+      "description": "画面レイアウトの赤入れ確定後に素の HTML/CSS/JS で実装。進行中は更新が古い順・closed は opt-in 取得",
+      "close_reason": "UI実装完了。赤入れ確定案どおり（日本語/右ペイン/ダーク）。自repo7件・9件repo・67件repoの実データで表示確認済み",
+      "created_at": "2026-07-19T11:50:08Z",
+      "updated_at": "2026-07-19T12:10:29Z",
+      "closed_at": "2026-07-19T12:10:29Z",
+      "parent_id": "bm-92g",
+      "dependents": [
+        "bm-auj",
+        "bm-ftm"
+      ]
+    },
+    {
+      "id": "bm-tuo",
+      "title": "server: 127.0.0.1 限定・GET のみの read-only 配信",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "GET 以外 405・JSON API・go:embed 静的配信・stale 明示を実装する。\n\n| 契約 | テスト |\n| --- | --- |\n| 127.0.0.1 のみ | TestListenLocalBindsLoopbackOnly |\n| GET 以外 405 | TestWriteMethodsRejected |\n| stale 明示 | TestStaleServesLastGoodSnapshot |",
+      "close_reason": "契約テスト green（GET以外405・loopback限定・stale明示・closed opt-in）",
+      "created_at": "2026-07-19T11:50:08Z",
+      "updated_at": "2026-07-19T12:28:46Z",
+      "closed_at": "2026-07-19T11:50:16Z",
+      "parent_id": "bm-92g"
+    }
+  ],
+  "ready": null,
+  "blocked": null,
+  "ready_source": "",
+  "generated_at": "2026-07-20T20:36:51.318772+09:00",
+  "file_mod_time": "2026-07-20T19:15:33.989468267+09:00",
+  "source_path": "beadmap/.beads/issues.jsonl（スナップショット）",
+  "stale": false,
+  "counts": {
+    "closed": 7,
+    "open": 1,
+    "total": 8
+  }
+}
