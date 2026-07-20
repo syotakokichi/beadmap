@@ -59,9 +59,10 @@
       "assignee": "syotakokichi",
       "description": "settlebase の公開 .beads/issues.jsonl を GitHub Actions で毎日取得し、gendemo で再生成→境界ゲート（fail-closed）通過時のみ自動 commit/push して Pages を再デプロイする。ゲートを通らなければ更新しない。",
       "acceptance_criteria": "1. schedule + workflow_dispatch で demo/data が自動更新される 2. 境界ゲートは fail-closed（語リスト secret が無い/空なら失敗・ログに語を出さない） 3. 変更が無ければ commit しない 4. 自動 push 後に Pages が再デプロイされる 5. README のデータ鮮度説明が自動更新に整合",
+      "notes": "実走テスト成功（2026-07-20 workflow_dispatch run 29740597239）: 境界ゲートPASS（secretから語リスト復元・ログに語なし）→ bm-fh4 close の実変化を検知 → github-actions[bot] が commit/push → pages 明示dispatch success → 本番デモの closed 一覧に bm-fh4 が反映されることをブラウザで確認。フルパスの自己言及テスト完了",
       "close_reason": "実装完了: update-demo-data.yml（毎日05:00 JST + dispatch / 公開jsonlのみ入力 / 境界ゲートfail-closed・語リストはActions secret・ログに語もヒットも出さない / 実変化時のみcommit・タイムスタンプ行無視 / pages明示dispatch）。BOUNDARY_WORDS secret登録済み。実走テストの証跡はnotesに追記",
       "created_at": "2026-07-20T11:33:19Z",
-      "updated_at": "2026-07-20T12:00:33Z",
+      "updated_at": "2026-07-20T12:02:17Z",
       "closed_at": "2026-07-20T12:00:33Z"
     },
     {
@@ -134,9 +135,10 @@
   "ready": null,
   "blocked": null,
   "ready_source": "",
-  "generated_at": "2026-07-20T12:01:10.693784974Z",
-  "file_mod_time": "2026-07-20T12:01:00.109061401Z",
+  "generated_at": "2026-07-20T13:51:45.786976695Z",
+  "file_mod_time": "2026-07-20T13:51:34.415358346Z",
   "source_path": "beadmap/.beads/issues.jsonl（スナップショット）",
+  "source_commit": "9750c7e",
   "stale": false,
   "counts": {
     "closed": 8,
