@@ -135,10 +135,10 @@
   "ready": null,
   "blocked": null,
   "ready_source": "",
-  "generated_at": "2026-08-12T20:39:55.806152013Z",
-  "file_mod_time": "2026-08-12T20:39:43.127518056Z",
+  "generated_at": "2026-08-13T20:38:40.084846406Z",
+  "file_mod_time": "2026-08-13T20:38:25.462937165Z",
   "source_path": "beadmap/.beads/issues.jsonl（スナップショット）",
-  "source_commit": "b353999",
+  "source_commit": "73f5423",
   "stale": false,
   "counts": {
     "closed": 8,
