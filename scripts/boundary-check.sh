@@ -52,6 +52,8 @@ status=0
 words=0
 while IFS= read -r word; do
   word="${word%$'\r'}" # CRLF 由来の \r を除去（偽陰性防止）
+  word="${word#"${word%%[![:space:]]*}"}" # 前後空白を除去してから無効行判定（空白付きコメントの素通り防止）
+  word="${word%"${word##*[![:space:]]}"}"
   [[ -z "$word" || "$word" == \#* ]] && continue
   words=$((words + 1))
 
