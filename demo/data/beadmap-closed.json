@@ -1,6 +1,18 @@
 {
   "issues": [
     {
+      "id": "bm-7ub",
+      "title": "boundary-check.sh: 先頭空白付きコメント行が有効語として数えられ fail-closed をすり抜けるバグ修正",
+      "status": "closed",
+      "priority": 1,
+      "issue_type": "task",
+      "description": "語リストの行頭に空白があるコメント行（例:「  # メモ」）が [[ $word == #* ]] にマッチせず有効語1語として計上され、コメントのみのリストでも有効語0チェックを通過してしまう。外部レビュー（fact/risk）のネガティブテストで再現。修正: CRLF除去後に前後空白をトリムしてから空行・コメント判定を行う。回帰テスト: 先頭空白付きコメントのみ/空白のみ/CRLF の3ケースで exit 1 を確認",
+      "close_reason": "修正完了: CRLF除去後に前後空白をトリムしてから空行・コメント判定するよう変更。回帰テスト4ケース（先頭空白コメントのみ/空白のみ/CRLF混在→exit 1、前後空白付き実語の作業ツリーヒット→exit 1検出）で確認。発見は外部fact/riskレビューのネガティブテスト",
+      "created_at": "2026-08-14T04:28:11Z",
+      "updated_at": "2026-08-14T04:29:11Z",
+      "closed_at": "2026-08-14T04:29:11Z"
+    },
+    {
       "id": "bm-92g",
       "title": "beadmap v1 リリース",
       "status": "closed",
@@ -135,14 +147,14 @@
   "ready": null,
   "blocked": null,
   "ready_source": "",
-  "generated_at": "2026-08-13T20:38:40.084846406Z",
-  "file_mod_time": "2026-08-13T20:38:25.462937165Z",
+  "generated_at": "2026-08-14T20:27:26.728120978Z",
+  "file_mod_time": "2026-08-14T20:27:08.260384572Z",
   "source_path": "beadmap/.beads/issues.jsonl（スナップショット）",
-  "source_commit": "73f5423",
+  "source_commit": "815863e",
   "stale": false,
   "counts": {
-    "closed": 8,
+    "closed": 9,
     "open": 3,
-    "total": 11
+    "total": 12
   }
 }

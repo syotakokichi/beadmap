@@ -114,14 +114,14 @@
   "ready": null,
   "blocked": null,
   "ready_source": "",
-  "generated_at": "2026-08-13T20:38:40.005393612Z",
-  "file_mod_time": "2026-08-13T20:38:28.069341529Z",
+  "generated_at": "2026-08-14T20:27:26.642604629Z",
+  "file_mod_time": "2026-08-14T20:27:10.603967321Z",
   "source_path": "settlebase/.beads/issues.jsonl（スナップショット）",
-  "source_commit": "1c399d2",
+  "source_commit": "c3f81f7",
   "stale": false,
   "counts": {
     "closed": 9,
-    "open": 7,
-    "total": 16
+    "open": 8,
+    "total": 17
   }
 }

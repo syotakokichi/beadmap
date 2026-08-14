@@ -14,6 +14,16 @@
       ]
     },
     {
+      "id": "sb-1jg",
+      "title": "boundary-check.sh を fail-closed 最低要件へ追随（参照実装: beadmap）",
+      "status": "open",
+      "priority": 2,
+      "issue_type": "task",
+      "description": "beadmap 側 scripts/boundary-check.sh で強化された fail-closed 最低要件に settlebase 版を追随させる: (1)語リストの有効語が0件（コメント・空行のみ）なら失敗 (2)grep/git の実行エラー（exit 2以上）を「ヒットなし」と区別して失敗 (3)CRLF 正規化 (4)語の前後空白をトリムしてから空行・コメント判定（空白付きコメント行の素通り防止）。現行版は有効語0件チェックがなく、|| true が実行エラーを握りつぶす。あわせて .claude/rules/boundary-check.md の fail-closed 記述を実装に合わせて更新する。CI 例外は追加しない（無人公開 workflow が存在しないため、現行のローカル専用運用を維持）",
+      "created_at": "2026-08-14T03:41:07Z",
+      "updated_at": "2026-08-14T04:30:42Z"
+    },
+    {
       "id": "sb-1un",
       "title": "部門ウォレット UI の最初の縦切り（一覧・残高表示）",
       "status": "open",
@@ -98,6 +108,7 @@
   ],
   "ready": [
     "sb-0os",
+    "sb-1jg",
     "sb-1un",
     "sb-2o4"
   ],
@@ -108,14 +119,14 @@
     "sb-st3"
   ],
   "ready_source": "fallback",
-  "generated_at": "2026-08-13T20:38:40.005393612Z",
-  "file_mod_time": "2026-08-13T20:38:28.069341529Z",
+  "generated_at": "2026-08-14T20:27:26.642604629Z",
+  "file_mod_time": "2026-08-14T20:27:10.603967321Z",
   "source_path": "settlebase/.beads/issues.jsonl（スナップショット）",
-  "source_commit": "1c399d2",
+  "source_commit": "c3f81f7",
   "stale": false,
   "counts": {
     "closed": 9,
-    "open": 7,
-    "total": 16
+    "open": 8,
+    "total": 17
   }
 }
