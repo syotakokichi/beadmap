@@ -57,8 +57,9 @@ v1 公開済み（collector / server / ui の 3 層 + read-only 契約テスト�
 | 日 | 内容 | 記事 | devlog | グラレコ |
 | --- | --- | --- | --- | --- |
 | 2026-07-19 | 立ち上げ: 名前選定・境界ゲート・Go ゼロ依存の 3 層実装 | [Zenn](https://zenn.dev/syommy_program/articles/beadmap-beads-viewer) | [2026-07-19-day1](docs/devlog/2026-07-19-day1.md) | [PNG](docs/devlog/assets/2026-07-19-day1.png) |
-| 2026-07-20 | v1 公開: 検証レビュー・境界ゲートの実戦・デモ方針の確定 | [Zenn](https://zenn.dev/syommy_program/articles/beadmap-beads-viewer) | [2026-07-20-day2](docs/devlog/2026-07-20-day2.md) | [PNG](docs/devlog/assets/2026-07-20-day2.png) |
+| 2026-07-20 | v1 公開: 検証レビュー・境界ゲートの実戦・デモ方針の確定 | [Zenn](https://zenn.dev/syommy_program/articles/beadmap-boundary-gate) | [2026-07-20-day2](docs/devlog/2026-07-20-day2.md) | [PNG](docs/devlog/assets/2026-07-20-day2.png) |
 | 2026-07-20 | 静的デモ公開: settlebase の進捗俯瞰をブラウザだけで | [Zenn](https://zenn.dev/syommy_program/articles/beadmap-beads-viewer) | [2026-07-20-static-demo](docs/devlog/2026-07-20-static-demo.md) | [PNG](docs/devlog/assets/2026-07-20-static-demo.png) |
+| 2026-08-16 | 境界ゲートの設計と実戦を記事化（README 記事列の更新） | [Zenn](https://zenn.dev/syommy_program/articles/beadmap-boundary-gate) | [2026-08-16-boundary-gate-article](docs/devlog/2026-08-16-boundary-gate-article.md) | -- |
 
 ## read-only 契約
 
