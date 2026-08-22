@@ -119,10 +119,10 @@
     "sb-st3"
   ],
   "ready_source": "fallback",
-  "generated_at": "2026-08-21T20:21:55.657118833Z",
-  "file_mod_time": "2026-08-21T20:21:41.58804337Z",
+  "generated_at": "2026-08-22T20:18:33.581608345Z",
+  "file_mod_time": "2026-08-22T20:18:20.525618714Z",
   "source_path": "settlebase/.beads/issues.jsonl（スナップショット）",
-  "source_commit": "c3f81f7",
+  "source_commit": "345c111",
   "stale": false,
   "counts": {
     "closed": 9,
