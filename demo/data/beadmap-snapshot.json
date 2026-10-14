@@ -39,10 +39,10 @@
   ],
   "blocked": null,
   "ready_source": "fallback",
-  "generated_at": "2026-10-13T23:35:24.217843041Z",
-  "file_mod_time": "2026-10-13T23:35:12.622223247Z",
+  "generated_at": "2026-10-14T22:57:40.690243686Z",
+  "file_mod_time": "2026-10-14T22:57:24.78157226Z",
   "source_path": "beadmap/.beads/issues.jsonl（スナップショット）",
-  "source_commit": "3311a7e",
+  "source_commit": "31a0bf9",
   "stale": false,
   "counts": {
     "closed": 9,
